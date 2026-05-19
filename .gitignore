@@ -1,0 +1,29 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Local runtime clutter
+.DS_Store
+*.swp
+*.swo
+
+# Very large generated scientific data products
+*.nc
+*.nc4
+*.h5
+*.hdf
+*.zarr/
+
+# Plot/export products generated during local exploration
+plots/
+figures/
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+
