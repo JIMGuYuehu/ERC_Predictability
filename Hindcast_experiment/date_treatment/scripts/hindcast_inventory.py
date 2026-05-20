@@ -29,8 +29,8 @@ def inventory_case(case_root: Path) -> dict:
     for var in INPUT_VARS:
         row[f"n_{var}"] = count_files(case_root, var, f"*.{var}.nc")
     row["n_legacy_EPflux_Fz"] = count_files(case_root, "EPflux_daily", "*.Fz.nc")
-    row["has_new_EPflux_ubar_wcorr"] = int(
-        (case_root / "EPflux_daily_ubar_wcorr" / "all_waves" / f"EPFLUX_all_waves_{case_root.name}_members_time_plev_lat.nc").exists()
+    row["has_new_EPflux_ubar"] = int(
+        (case_root / "EPflux_daily_ubar" / "all_waves" / f"EPFLUX_all_waves_{case_root.name}_members_time_plev_lat.nc").exists()
     )
     row["has_EHF"] = int((case_root / "Eddyheatflux_daily" / f"EHF_{case_root.name}_members_time_plev_lat.nc").exists())
     row["has_AO_NAM_B2000WCN_projection"] = int(
@@ -38,8 +38,9 @@ def inventory_case(case_root: Path) -> dict:
     )
     row["has_partial_O3"] = int((case_root / "partial_O3" / f"{case_root.name}_partial_O3_all_ranges_members.nc").exists())
     row["has_FWD"] = int((case_root / "final_warming_date" / f"{case_root.name}_FWD_plev_member.nc").exists())
-    row["needs_OMEGA_extract"] = int(row["n_OMEGA"] < row["n_U"])
-    row["needs_new_EPflux"] = int(not row["has_new_EPflux_ubar_wcorr"])
+    row["omega_required_for_EPflux"] = 0
+    row["needs_OMEGA_extract"] = 0
+    row["needs_new_EPflux"] = int(not row["has_new_EPflux_ubar"])
     row["needs_EHF"] = int(not row["has_EHF"])
     row["needs_AO_NAM"] = int(not row["has_AO_NAM_B2000WCN_projection"])
     row["needs_partial_O3"] = int(not row["has_partial_O3"])
@@ -58,7 +59,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = list(rows[0].keys()) if rows else ["case"]
     with args.out.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     print(f"[WRITE] {args.out}")
@@ -68,7 +69,7 @@ def main(argv: Optional[List[str]] = None) -> None:
             "OMEGA",
             f"{row['n_OMEGA']}/{row['n_U']}",
             "new_EPflux",
-            row["has_new_EPflux_ubar_wcorr"],
+            row["has_new_EPflux_ubar"],
             "EHF",
             row["has_EHF"],
             "AO/NAM",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare legacy Hindcast EPflux_daily/Fz files with new EPflux_daily_ubar_wcorr.
+"""Compare legacy Hindcast EPflux_daily/Fz files with new EPflux_daily_ubar.
 
 The legacy Fz files are 40-80N cos-lat means and were documented as w=None.
 This script reduces the new all_waves ep2 to the same latitude band and writes
@@ -40,13 +40,13 @@ def corrcoef(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def compare_case(case_root: Path, overwrite: bool) -> Optional[Path]:
-    new_file = case_root / "EPflux_daily_ubar_wcorr" / "all_waves" / f"EPFLUX_all_waves_{case_root.name}_members_time_plev_lat.nc"
+    new_file = case_root / "EPflux_daily_ubar" / "all_waves" / f"EPFLUX_all_waves_{case_root.name}_members_time_plev_lat.nc"
     legacy_dir = case_root / "EPflux_daily"
     if not new_file.exists() or not legacy_dir.is_dir():
         print(f"[SKIP] {case_root.name}: missing new EPFLUX or legacy EPflux_daily")
         return None
 
-    out_dir = case_root / "EPflux_daily_ubar_wcorr" / "quality_control"
+    out_dir = case_root / "EPflux_daily_ubar" / "quality_control"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file = out_dir / f"{case_root.name}_legacy_Fz_vs_new_ep2_40_80N.csv"
     if out_file.exists() and not overwrite:
@@ -105,7 +105,7 @@ def compare_case(case_root: Path, overwrite: bool) -> Optional[Path]:
         "message",
     ]
     with out_file.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     print(f"[WRITE] {out_file}")

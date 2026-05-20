@@ -7,8 +7,8 @@ set -euo pipefail
 #   /mnt/soclim0/public_data/weiji/Hindcast/<case>/<VAR>/<member>.cam.h3.<VAR>.nc
 #
 # The script is restart-safe: existing non-empty outputs are skipped. OMEGA is
-# requested for every member; if a member segment does not contain OMEGA the
-# missing variable is logged and the other variables can still be extracted.
+# optional because raw NOCOUPL Hindcast h3 files do not contain it. Set
+# EXTRACT_OMEGA=1 to archive any available coupled OMEGA segments.
 
 INPUT_BASE="${INPUT_BASE:-/mnt/backup_ETH/lens}"
 OUTPUT_BASE="${OUTPUT_BASE:-/mnt/soclim0/public_data/weiji/Hindcast}"
@@ -16,8 +16,12 @@ TMP_BASE="${TMP_BASE:-${OUTPUT_BASE}/_tmp_extract_longrun_vars}"
 MAX_JOBS="${MAX_JOBS:-16}"
 DRY_RUN="${DRY_RUN:-0}"
 OVERWRITE="${OVERWRITE:-0}"
+EXTRACT_OMEGA="${EXTRACT_OMEGA:-0}"
 
-CORE_VARS=(U V T OMEGA PS Z3 O3)
+CORE_VARS=(U V T PS Z3 O3)
+if [[ "${EXTRACT_OMEGA}" == "1" ]]; then
+    CORE_VARS+=(OMEGA)
+fi
 COORD_VARS="P0,hyai,hyam,hybi,hybm,date,time,datesec,time_bnds,lat,lon,lev,ilev,gw"
 LOG_DIR="${OUTPUT_BASE}/_logs"
 MISSING_LOG="${LOG_DIR}/hindcast_missing_vars_$(date +%Y%m%d_%H%M%S).log"
@@ -90,6 +94,7 @@ echo "OUTPUT_BASE=${OUTPUT_BASE}"
 echo "MAX_JOBS=${MAX_JOBS}"
 echo "DRY_RUN=${DRY_RUN}"
 echo "OVERWRITE=${OVERWRITE}"
+echo "EXTRACT_OMEGA=${EXTRACT_OMEGA}"
 echo "Missing-variable log: ${MISSING_LOG}"
 
 shopt -s nullglob

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Compute Longrun-consistent Hindcast EP flux diagnostics.
+"""Compute Hindcast EP flux diagnostics with Longrun pressure/wave conventions.
 
-Default method matches Longrun/date_treatment/Epflux_calculation.ipynb:
-DO_UBAR=True and OMEGA pressure-velocity correction enabled. Members without
-OMEGA are skipped by default and recorded in a summary CSV.
+Hindcast production uses DO_UBAR=True and w=None. The raw NOCOUPL Hindcast h3
+files do not contain OMEGA, and coupled OMEGA coverage is sparse, so the OMEGA
+pressure-velocity correction is intentionally disabled for a comparable
+coupled/NOCOUPL product.
 """
 
 from __future__ import annotations
@@ -42,8 +43,8 @@ from hindcast_common import (
 
 
 DO_UBAR = True
-USE_OMEGA = True
-OUTPUT_SUBDIR = "EPflux_daily_ubar_wcorr"
+USE_OMEGA = False
+OUTPUT_SUBDIR = "EPflux_daily_ubar"
 WAVES = {"all_waves": -1, "wave1": 1, "wave2": 2}
 COMPONENTS = ("ep1", "ep2", "div1", "div2")
 
@@ -74,35 +75,26 @@ def add_lead_coords(ds: xr.Dataset, src: xr.Dataset) -> xr.Dataset:
 
 
 def compute_one_member(payload) -> Tuple[str, Optional[xr.Dataset], Dict[str, str]]:
-    case_name, member_id, paths, allow_missing_omega = payload
+    case_name, member_id, paths = payload
     record = {
         "case": case_name,
         "member": member_id,
         "status": "ok",
         "message": "",
         "has_omega": str("OMEGA" in paths),
+        "omega_used": str(USE_OMEGA),
     }
-    ds_u = ds_v = ds_t = ds_w = None
+    ds_u = ds_v = ds_t = None
     try:
-        if "OMEGA" not in paths and not allow_missing_omega:
-            record["status"] = "skip_missing_omega"
-            record["message"] = "OMEGA input is required for Longrun-consistent EP flux"
-            return member_id, None, record
-
         ds_u = open_dataset(paths["U"])
         ds_v = open_dataset(paths["V"])
         ds_t = open_dataset(paths["T"])
-        ds_w = open_dataset(paths["OMEGA"]) if "OMEGA" in paths else None
 
         p_mid = compute_pressure_mid(ds_u)
         u_std = interp_profile_logp(clean_field(ds_u["U"]), p_mid, PLEV_STD_PA)
         v_std = interp_profile_logp(clean_field(ds_v["V"]), p_mid, PLEV_STD_PA)
         t_std = interp_profile_logp(clean_field(ds_t["T"]), p_mid, PLEV_STD_PA)
-        if ds_w is not None:
-            w_std = interp_profile_logp(clean_field(ds_w["OMEGA"]) / 100.0, p_mid, PLEV_STD_PA)
-            w_np = w_std.transpose("time", "plev", "lat", "lon").values
-        else:
-            w_np = None
+        w_np = None
 
         u_np = u_std.transpose("time", "plev", "lat", "lon").values
         v_np = v_std.transpose("time", "plev", "lat", "lon").values
@@ -130,7 +122,7 @@ def compute_one_member(payload) -> Tuple[str, Optional[xr.Dataset], Dict[str, st
         record["message"] = f"{type(exc).__name__}: {exc}"
         return member_id, None, record
     finally:
-        for ds in (ds_u, ds_v, ds_t, ds_w):
+        for ds in (ds_u, ds_v, ds_t):
             if ds is not None:
                 ds.close()
         gc.collect()
@@ -143,7 +135,11 @@ def write_summary(case_root: Path, records: List[Dict[str, str]], overwrite: boo
     if out_file.exists() and not overwrite:
         out_file = out_dir / f"{case_root.name}_EPFLUX_processing_summary.latest.csv"
     with out_file.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["case", "member", "status", "message", "has_omega"])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["case", "member", "status", "message", "has_omega", "omega_used"],
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(records)
     return out_file
@@ -164,12 +160,13 @@ def write_wave_outputs(case_root: Path, ds_full: xr.Dataset, overwrite: bool) ->
             {
                 "title": f"Hindcast EP flux, {case_root.name}, {subdir}",
                 "case_name": case_root.name,
-                "method": "ComputeEPfluxDiv with DO_UBAR=True and OMEGA correction when available",
+                "method": "ComputeEPfluxDiv with DO_UBAR=True and w=None",
                 "do_ubar": str(DO_UBAR),
                 "use_omega_w_correction": str(USE_OMEGA),
-                "omega_units_passed_to_aostools": "hPa/s",
+                "omega_units_passed_to_aostools": "not used",
                 "wave_selection": subdir,
-                "source": "Hindcast member U/V/T/OMEGA files on CAM hybrid levels, log-p interpolated to Longrun standard pressure grid",
+                "source": "Hindcast member U/V/T files on CAM hybrid levels, log-p interpolated to Longrun standard pressure grid",
+                "omega_correction_note": "Disabled because raw NOCOUPL Hindcast h3 files have no OMEGA and coupled OMEGA coverage is sparse.",
             }
         )
         out_file = out_base / subdir / f"EPFLUX_{subdir}_{case_root.name}_members_time_plev_lat.nc"
@@ -194,7 +191,7 @@ def process_case(case_root: Path, args) -> None:
 
     print(f"[CASE] {case_root.name}: {len(inputs)} U/V/T members")
     payloads = [
-        (case_root.name, member_id, paths, args.allow_missing_omega)
+        (case_root.name, member_id, paths)
         for member_id, paths in inputs.items()
     ]
     results: List[Tuple[str, xr.Dataset]] = []
@@ -224,11 +221,6 @@ def process_case(case_root: Path, args) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     add_default_args(parser)
-    parser.add_argument(
-        "--allow-missing-omega",
-        action="store_true",
-        help="Compute members without OMEGA using w=None. Default skips them to keep Longrun consistency.",
-    )
     return parser
 
 
