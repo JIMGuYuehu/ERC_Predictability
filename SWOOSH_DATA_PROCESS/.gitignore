@@ -1,0 +1,4 @@
+outputs/*.nc
+outputs/*.nc4
+outputs/*.tmp
+__pycache__/

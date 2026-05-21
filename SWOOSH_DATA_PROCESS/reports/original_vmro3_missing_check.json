@@ -1,0 +1,89 @@
+{
+  "input_file": "/mnt/soclim0/public_data/weiji/swoosh/processed_like_input4MIPs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101.nc",
+  "checked_variables": [
+    "vmro3"
+  ],
+  "n_checked_variables": 1,
+  "total_missing_or_nonfinite": 1064448,
+  "has_missing_or_nonfinite": true,
+  "variables": {
+    "vmro3": {
+      "dims": [
+        "time",
+        "plev",
+        "lat",
+        "lon"
+      ],
+      "shape": [
+        14,
+        66,
+        96,
+        144
+      ],
+      "dtype": "float32",
+      "n_total": 12773376,
+      "n_missing_or_nonfinite": 1064448,
+      "n_nan": 1064448,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.08333333333333333,
+      "n_negative_finite": 0,
+      "finite_min": 3.929509606592774e-09,
+      "finite_max": 1.1217255632800516e-05,
+      "finite_mean": 2.4938144633779302e-06,
+      "encoded_fill_value": 1.0000000200408773e+20,
+      "attrs_missing_value": null,
+      "all_missing_positions_by_dim": {
+        "time": {
+          "n_positions_all_missing": 0,
+          "positions_sample": []
+        },
+        "plev": {
+          "n_positions_all_missing": 0,
+          "positions_sample": []
+        },
+        "lat": {
+          "n_positions_all_missing": 8,
+          "positions_sample": [
+            {
+              "index": 0,
+              "value": -90.0
+            },
+            {
+              "index": 1,
+              "value": -88.10526275634766
+            },
+            {
+              "index": 2,
+              "value": -86.21052551269531
+            },
+            {
+              "index": 3,
+              "value": -84.31578826904297
+            },
+            {
+              "index": 92,
+              "value": 84.31578826904297
+            },
+            {
+              "index": 93,
+              "value": 86.21052551269531
+            },
+            {
+              "index": 94,
+              "value": 88.10526275634766
+            },
+            {
+              "index": 95,
+              "value": 90.0
+            }
+          ]
+        },
+        "lon": {
+          "n_positions_all_missing": 0,
+          "positions_sample": []
+        }
+      }
+    }
+  }
+}

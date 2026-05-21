@@ -1,0 +1,222 @@
+{
+  "input_file": "SWOOSH_DATA_PROCESS/outputs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101_filled_no_missing.nc",
+  "checked_variables": [
+    "time_bnds",
+    "plev_bnds",
+    "lat_bnds",
+    "lon_bnds",
+    "vmro3",
+    "time",
+    "plev",
+    "lat",
+    "lon"
+  ],
+  "n_checked_variables": 9,
+  "total_missing_or_nonfinite": 0,
+  "has_missing_or_nonfinite": false,
+  "variables": {
+    "time_bnds": {
+      "dims": [
+        "time",
+        "nb2"
+      ],
+      "shape": [
+        14,
+        2
+      ],
+      "dtype": "float64",
+      "n_total": 28,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 0,
+      "finite_min": 62019.0,
+      "finite_max": 62446.0,
+      "finite_mean": 62231.82142857143,
+      "encoded_fill_value": NaN,
+      "attrs_missing_value": null
+    },
+    "plev_bnds": {
+      "dims": [
+        "plev",
+        "nb2"
+      ],
+      "shape": [
+        66,
+        2
+      ],
+      "dtype": "float32",
+      "n_total": 132,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 1,
+      "finite_min": -1.0913936421275139e-11,
+      "finite_max": 1037.5,
+      "finite_mean": 167.0433349609375,
+      "encoded_fill_value": NaN,
+      "attrs_missing_value": null
+    },
+    "lat_bnds": {
+      "dims": [
+        "lat",
+        "nb2"
+      ],
+      "shape": [
+        96,
+        2
+      ],
+      "dtype": "float64",
+      "n_total": 192,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 95,
+      "finite_min": -90.0,
+      "finite_max": 90.0,
+      "finite_mean": 0.0,
+      "encoded_fill_value": NaN,
+      "attrs_missing_value": null
+    },
+    "lon_bnds": {
+      "dims": [
+        "lon",
+        "nb2"
+      ],
+      "shape": [
+        144,
+        2
+      ],
+      "dtype": "float64",
+      "n_total": 288,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 1,
+      "finite_min": -1.25,
+      "finite_max": 358.75,
+      "finite_mean": 178.75,
+      "encoded_fill_value": NaN,
+      "attrs_missing_value": null
+    },
+    "vmro3": {
+      "dims": [
+        "time",
+        "plev",
+        "lat",
+        "lon"
+      ],
+      "shape": [
+        14,
+        66,
+        96,
+        144
+      ],
+      "dtype": "float32",
+      "n_total": 12773376,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 0,
+      "finite_min": 3.929509606592774e-09,
+      "finite_max": 1.1217255632800516e-05,
+      "finite_mean": 2.462225893395953e-06,
+      "encoded_fill_value": 1.0000000200408773e+20,
+      "attrs_missing_value": null
+    },
+    "time": {
+      "dims": [
+        "time"
+      ],
+      "shape": [
+        14
+      ],
+      "dtype": "float64",
+      "n_total": 14,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 0,
+      "finite_min": 2039.5,
+      "finite_max": 2052.5,
+      "finite_mean": 2045.993087557604,
+      "encoded_fill_value": NaN,
+      "attrs_missing_value": null
+    },
+    "plev": {
+      "dims": [
+        "plev"
+      ],
+      "shape": [
+        66
+      ],
+      "dtype": "float32",
+      "n_total": 66,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 0,
+      "finite_min": 9.999999747378752e-05,
+      "finite_max": 1000.0,
+      "finite_mean": 166.7592315673828,
+      "encoded_fill_value": NaN,
+      "attrs_missing_value": null
+    },
+    "lat": {
+      "dims": [
+        "lat"
+      ],
+      "shape": [
+        96
+      ],
+      "dtype": "float32",
+      "n_total": 96,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 48,
+      "finite_min": -90.0,
+      "finite_max": 90.0,
+      "finite_mean": -3.178914482759865e-07,
+      "encoded_fill_value": NaN,
+      "attrs_missing_value": null
+    },
+    "lon": {
+      "dims": [
+        "lon"
+      ],
+      "shape": [
+        144
+      ],
+      "dtype": "float32",
+      "n_total": 144,
+      "n_missing_or_nonfinite": 0,
+      "n_nan": 0,
+      "n_posinf": 0,
+      "n_neginf": 0,
+      "missing_fraction": 0.0,
+      "n_negative_finite": 0,
+      "finite_min": 0.0,
+      "finite_max": 357.5,
+      "finite_mean": 178.75,
+      "encoded_fill_value": NaN,
+      "attrs_missing_value": null
+    }
+  }
+}
