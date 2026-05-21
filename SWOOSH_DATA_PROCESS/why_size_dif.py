@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import netCDF4 as nc
+import h5py
 import numpy as np
 
 
@@ -103,6 +104,103 @@ def variable_info(var: nc.Variable) -> dict[str, Any]:
     }
 
 
+def hdf5_chunk_storage_info(path: Path, variable: str = "vmro3") -> dict[str, Any]:
+    with h5py.File(path, "r") as handle:
+        dset = handle[variable]
+        chunks = dset.chunks
+        if chunks is None:
+            return {
+                "n_chunks": 0,
+                "storage_bytes_sum": int(dset.id.get_storage_size()),
+                "storage_mib_sum": mib(int(dset.id.get_storage_size())),
+                "chunk_bytes_min": None,
+                "chunk_bytes_max": None,
+                "chunk_bytes_mean": None,
+                "chunk_bytes_sample": [],
+            }
+
+        n_chunks = int(dset.id.get_num_chunks())
+        sizes = [int(dset.id.get_chunk_info(i).size) for i in range(n_chunks)]
+        raw_chunk_bytes = int(np.prod(chunks) * dset.dtype.itemsize)
+        return {
+            "n_chunks": n_chunks,
+            "raw_chunk_bytes": raw_chunk_bytes,
+            "raw_chunk_mib": mib(raw_chunk_bytes),
+            "storage_bytes_sum": int(sum(sizes)),
+            "storage_mib_sum": mib(int(sum(sizes))),
+            "chunk_bytes_min": int(min(sizes)) if sizes else None,
+            "chunk_bytes_max": int(max(sizes)) if sizes else None,
+            "chunk_bytes_mean": float(np.mean(sizes)) if sizes else None,
+            "chunk_compression_ratio_mean": (
+                float(np.mean(sizes) / raw_chunk_bytes) if raw_chunk_bytes and sizes else None
+            ),
+            "chunk_bytes_sample": sizes[: min(16, len(sizes))],
+        }
+
+
+def numeric_data_stats(path: Path, variable: str = "vmro3") -> dict[str, Any]:
+    with nc.Dataset(path, "r") as ds:
+        var = ds.variables[variable]
+        data = var[:]
+        if np.ma.isMaskedArray(data):
+            data = data.filled(np.nan)
+        arr = np.asarray(data, dtype=np.float64)
+        finite = np.isfinite(arr)
+        values = arr[finite]
+        out: dict[str, Any] = {
+            "n_total": int(arr.size),
+            "n_finite": int(finite.sum()),
+            "n_missing_or_nonfinite": int((~finite).sum()),
+            "finite_min": float(values.min()) if values.size else None,
+            "finite_max": float(values.max()) if values.size else None,
+            "finite_mean": float(values.mean()) if values.size else None,
+            "finite_std": float(values.std()) if values.size else None,
+        }
+
+        diffs = {}
+        for axis_name, axis in zip(var.dimensions, range(arr.ndim)):
+            diff = np.diff(arr, axis=axis)
+            finite_diff = diff[np.isfinite(diff)]
+            diffs[axis_name] = {
+                "mean_abs_diff": float(np.mean(np.abs(finite_diff))) if finite_diff.size else None,
+                "median_abs_diff": float(np.median(np.abs(finite_diff))) if finite_diff.size else None,
+                "p95_abs_diff": float(np.percentile(np.abs(finite_diff), 95)) if finite_diff.size else None,
+            }
+        out["adjacent_difference_stats"] = diffs
+        return out
+
+
+def coordinate_comparison(reference_file: Path, other_file: Path) -> dict[str, Any]:
+    coord_names = ("time", "time_bnds", "plev", "plev_bnds", "lat", "lat_bnds", "lon", "lon_bnds")
+    out = {}
+    with nc.Dataset(reference_file, "r") as ref, nc.Dataset(other_file, "r") as other:
+        for name in coord_names:
+            if name not in ref.variables or name not in other.variables:
+                out[name] = {"present_in_both": False}
+                continue
+            ref_vals = np.asarray(ref.variables[name][:])
+            other_vals = np.asarray(other.variables[name][:])
+            same_shape = ref_vals.shape == other_vals.shape
+            if same_shape and np.issubdtype(ref_vals.dtype, np.number):
+                max_abs_diff = float(np.nanmax(np.abs(ref_vals.astype(float) - other_vals.astype(float))))
+                exact_equal = bool(np.array_equal(ref_vals, other_vals))
+            else:
+                max_abs_diff = None
+                exact_equal = bool(same_shape and np.array_equal(ref_vals, other_vals))
+            out[name] = {
+                "present_in_both": True,
+                "same_shape": bool(same_shape),
+                "exact_equal": exact_equal,
+                "max_abs_diff": max_abs_diff,
+            }
+    return out
+
+
+def variable_order(path: Path) -> list[str]:
+    with nc.Dataset(path, "r") as ds:
+        return list(ds.variables)
+
+
 def file_info(path: Path) -> dict[str, Any]:
     if not path.exists():
         raise FileNotFoundError(path)
@@ -123,9 +221,12 @@ def file_info(path: Path) -> dict[str, Any]:
                 for name, dim in ds.dimensions.items()
             },
             "variables": variables,
+            "variable_order": list(ds.variables),
             "raw_payload_bytes": raw_payload,
             "raw_payload_mib": mib(raw_payload),
             "file_to_raw_payload_ratio": path.stat().st_size / raw_payload if raw_payload else None,
+            "vmro3_hdf5_chunk_storage": hdf5_chunk_storage_info(path, "vmro3"),
+            "vmro3_numeric_stats": numeric_data_stats(path, "vmro3"),
         }
 
 
@@ -157,6 +258,9 @@ def collect_report(
         if label == "reference":
             continue
         comparisons[label] = {
+            "variable_order_matches_reference": (
+                info["variable_order"] == reference["variable_order"]
+            ),
             "vmro3_dtype_matches_reference": (
                 info["variables"]["vmro3"]["dtype"]
                 == reference["variables"]["vmro3"]["dtype"]
@@ -167,6 +271,9 @@ def collect_report(
                 for name in VARIABLE_ORDER
                 if name in reference["variables"] and name in info["variables"]
             },
+            "coordinates_and_bounds_vs_reference": coordinate_comparison(
+                reference_file, Path(info["path"])
+            ),
         }
 
     return {
@@ -299,15 +406,41 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             "",
             "## `vmro3` Storage",
             "",
-            "| file | dtype | raw MiB | filters / chunking |",
-            "|---|---:|---:|---|",
+            "| file | dtype | raw MiB | compressed chunk MiB | mean chunk ratio | filters / chunking |",
+            "|---|---:|---:|---:|---:|---|",
         ]
     )
     for label, info in files.items():
         vmro3 = info["variables"]["vmro3"]
+        chunk_info = info["vmro3_hdf5_chunk_storage"]
         lines.append(
             f"| {label} | {vmro3['dtype']} | {vmro3['raw_mib']:.2f} | "
+            f"{chunk_info['storage_mib_sum']:.2f} | "
+            f"{chunk_info['chunk_compression_ratio_mean']:.3f} | "
             f"{fmt_filters(vmro3)} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Coordinate/Bounds Equality vs Reference",
+            "",
+            "| file | variable order matches? | filters/chunking all match? | coordinates/bounds exact? | max abs diff summary |",
+            "|---|---:|---:|---:|---|",
+        ]
+    )
+    for label, comparison in report["comparisons"].items():
+        coord_cmp = comparison["coordinates_and_bounds_vs_reference"]
+        all_exact = all(item.get("exact_equal") for item in coord_cmp.values())
+        all_filter_chunk_match = all(comparison["all_common_filters_chunking_match_reference"].values())
+        diffs = {
+            name: item.get("max_abs_diff")
+            for name, item in coord_cmp.items()
+            if item.get("max_abs_diff") not in (None, 0.0)
+        }
+        lines.append(
+            f"| {label} | {comparison['variable_order_matches_reference']} | "
+            f"{all_filter_chunk_match} | {all_exact} | {diffs or '{}'} |"
         )
 
     lines.extend(
@@ -340,10 +473,12 @@ def print_summary(report: dict[str, Any]) -> None:
     print("File size summary:")
     for label, info in report["files"].items():
         vmro3 = info["variables"]["vmro3"]
+        chunk = info["vmro3_hdf5_chunk_storage"]
         print(
             f"- {label}: {info['file_size_mib']:.2f} MiB, "
             f"model={info['data_model']}, disk={info['disk_format']}, "
-            f"vmro3 dtype={vmro3['dtype']}, {fmt_filters(vmro3)}"
+            f"vmro3 dtype={vmro3['dtype']}, {fmt_filters(vmro3)}, "
+            f"vmro3 chunk storage={chunk['storage_mib_sum']:.2f} MiB"
         )
     print()
     print(report["conclusion"]["size_difference_main_reason"])

@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-05-21T13:03:18.110393+00:00",
+  "created_utc": "2026-05-21T14:03:51.295560+00:00",
   "files": {
     "reference": {
       "path": "/mnt/soclim0/andreas/vmro3_input4MIPs_ozone_CMIP6_UReading-CCMI_2020.nc",
@@ -234,9 +234,80 @@
           "_FillValue": 1.0000000200408773e+20
         }
       },
+      "variable_order": [
+        "time",
+        "time_bnds",
+        "plev",
+        "plev_bnds",
+        "lat",
+        "lat_bnds",
+        "lon",
+        "lon_bnds",
+        "vmro3"
+      ],
       "raw_payload_bytes": 51099432,
       "raw_payload_mib": 48.732215881347656,
-      "file_to_raw_payload_ratio": 0.8386695374617863
+      "file_to_raw_payload_ratio": 0.8386695374617863,
+      "vmro3_hdf5_chunk_storage": {
+        "n_chunks": 16,
+        "raw_chunk_bytes": 3193344,
+        "raw_chunk_mib": 3.04541015625,
+        "storage_bytes_sum": 42810938,
+        "storage_mib_sum": 40.82769203186035,
+        "chunk_bytes_min": 2594877,
+        "chunk_bytes_max": 2753245,
+        "chunk_bytes_mean": 2675683.625,
+        "chunk_compression_ratio_mean": 0.8378939522331449,
+        "chunk_bytes_sample": [
+          2750744,
+          2751617,
+          2744064,
+          2748472,
+          2594877,
+          2596154,
+          2604734,
+          2604338,
+          2749608,
+          2742589,
+          2753245,
+          2747622,
+          2598992,
+          2600860,
+          2612466,
+          2610556
+        ]
+      },
+      "vmro3_numeric_stats": {
+        "n_total": 12773376,
+        "n_finite": 12773376,
+        "n_missing_or_nonfinite": 0,
+        "finite_min": 2.9859179573321626e-09,
+        "finite_max": 1.076528315024916e-05,
+        "finite_mean": 1.4556713066939025e-06,
+        "finite_std": 2.1101400150114997e-06,
+        "adjacent_difference_stats": {
+          "time": {
+            "mean_abs_diff": 9.280548625877598e-08,
+            "median_abs_diff": 2.0670583467108372e-08,
+            "p95_abs_diff": 4.4121059090684765e-07
+          },
+          "plev": {
+            "mean_abs_diff": 2.2720438846712798e-07,
+            "median_abs_diff": 7.01906444078304e-08,
+            "p95_abs_diff": 9.810969459067564e-07
+          },
+          "lat": {
+            "mean_abs_diff": 2.2876304226552352e-08,
+            "median_abs_diff": 4.5776005208608694e-09,
+            "p95_abs_diff": 1.1515294318087399e-07
+          },
+          "lon": {
+            "mean_abs_diff": 3.0612587900541125e-09,
+            "median_abs_diff": 7.676419500057818e-10,
+            "p95_abs_diff": 1.4292709238361567e-08
+          }
+        }
+      }
     },
     "original_processed": {
       "path": "/mnt/soclim0/public_data/weiji/swoosh/processed_like_input4MIPs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101.nc",
@@ -471,9 +542,80 @@
           "_FillValue": 1.0000000200408773e+20
         }
       },
+      "variable_order": [
+        "time",
+        "plev",
+        "lat",
+        "lon",
+        "time_bnds",
+        "plev_bnds",
+        "lat_bnds",
+        "lon_bnds",
+        "vmro3"
+      ],
       "raw_payload_bytes": 51099432,
       "raw_payload_mib": 48.732215881347656,
-      "file_to_raw_payload_ratio": 0.33118066752679365
+      "file_to_raw_payload_ratio": 0.33118066752679365,
+      "vmro3_hdf5_chunk_storage": {
+        "n_chunks": 16,
+        "raw_chunk_bytes": 3193344,
+        "raw_chunk_mib": 3.04541015625,
+        "storage_bytes_sum": 16879494,
+        "storage_mib_sum": 16.0975399017334,
+        "chunk_bytes_min": 615252,
+        "chunk_bytes_max": 1499445,
+        "chunk_bytes_mean": 1054968.375,
+        "chunk_compression_ratio_mean": 0.33036477592141655,
+        "chunk_bytes_sample": [
+          1494716,
+          1496264,
+          1491026,
+          1490098,
+          616691,
+          616840,
+          617638,
+          617603,
+          1499445,
+          1490431,
+          1492244,
+          1486547,
+          620217,
+          618830,
+          615252,
+          615652
+        ]
+      },
+      "vmro3_numeric_stats": {
+        "n_total": 12773376,
+        "n_finite": 11708928,
+        "n_missing_or_nonfinite": 1064448,
+        "finite_min": 3.929509606592774e-09,
+        "finite_max": 1.1217255632800516e-05,
+        "finite_mean": 2.493813725133169e-06,
+        "finite_std": 2.1812540927990008e-06,
+        "adjacent_difference_stats": {
+          "time": {
+            "mean_abs_diff": 1.6599380698538748e-07,
+            "median_abs_diff": 7.099333743099123e-08,
+            "p95_abs_diff": 6.614873200305738e-07
+          },
+          "plev": {
+            "mean_abs_diff": 1.855013120629815e-07,
+            "median_abs_diff": 0.0,
+            "p95_abs_diff": 1.0297579024154394e-06
+          },
+          "lat": {
+            "mean_abs_diff": 3.596787217687532e-08,
+            "median_abs_diff": 1.8638957044458948e-08,
+            "p95_abs_diff": 1.3750478728979925e-07
+          },
+          "lon": {
+            "mean_abs_diff": 5.046434096978796e-09,
+            "median_abs_diff": 2.407205101917498e-09,
+            "p95_abs_diff": 1.955231709871441e-08
+          }
+        }
+      }
     },
     "filled": {
       "path": "/mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101_filled_no_missing.nc",
@@ -708,9 +850,80 @@
           "_FillValue": 1.0000000200408773e+20
         }
       },
+      "variable_order": [
+        "time",
+        "plev",
+        "lat",
+        "lon",
+        "time_bnds",
+        "plev_bnds",
+        "lat_bnds",
+        "lon_bnds",
+        "vmro3"
+      ],
       "raw_payload_bytes": 51099432,
       "raw_payload_mib": 48.732215881347656,
-      "file_to_raw_payload_ratio": 0.33132953415216043
+      "file_to_raw_payload_ratio": 0.33132953415216043,
+      "vmro3_hdf5_chunk_storage": {
+        "n_chunks": 16,
+        "raw_chunk_bytes": 3193344,
+        "raw_chunk_mib": 3.04541015625,
+        "storage_bytes_sum": 16887923,
+        "storage_mib_sum": 16.105578422546387,
+        "chunk_bytes_min": 615838,
+        "chunk_bytes_max": 1499907,
+        "chunk_bytes_mean": 1055495.1875,
+        "chunk_compression_ratio_mean": 0.3305297479695266,
+        "chunk_bytes_sample": [
+          1495192,
+          1496772,
+          1491466,
+          1490528,
+          617285,
+          617486,
+          618280,
+          618165,
+          1499907,
+          1490916,
+          1492615,
+          1486960,
+          620832,
+          619448,
+          615838,
+          616233
+        ]
+      },
+      "vmro3_numeric_stats": {
+        "n_total": 12773376,
+        "n_finite": 12773376,
+        "n_missing_or_nonfinite": 0,
+        "finite_min": 3.929509606592774e-09,
+        "finite_max": 1.1217255632800516e-05,
+        "finite_mean": 2.462225875233832e-06,
+        "finite_std": 2.1374216321438857e-06,
+        "adjacent_difference_stats": {
+          "time": {
+            "mean_abs_diff": 1.7257110204855457e-07,
+            "median_abs_diff": 7.348171493504196e-08,
+            "p95_abs_diff": 6.834709438408026e-07
+          },
+          "plev": {
+            "mean_abs_diff": 1.7909610435945374e-07,
+            "median_abs_diff": 0.0,
+            "p95_abs_diff": 1.005586909741396e-06
+          },
+          "lat": {
+            "mean_abs_diff": 3.293899873040161e-08,
+            "median_abs_diff": 1.5258365237968974e-08,
+            "p95_abs_diff": 1.3168142913855238e-07
+          },
+          "lon": {
+            "mean_abs_diff": 4.986698564572972e-09,
+            "median_abs_diff": 2.3723032427369617e-09,
+            "p95_abs_diff": 1.9316757970955223e-08
+          }
+        }
+      }
     },
     "filled_netcdf4_classic": {
       "path": "/mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101_filled_no_missing_netcdf4_classic.nc",
@@ -945,13 +1158,85 @@
           "_FillValue": 1.0000000200408773e+20
         }
       },
+      "variable_order": [
+        "time",
+        "time_bnds",
+        "plev",
+        "plev_bnds",
+        "lat",
+        "lat_bnds",
+        "lon",
+        "lon_bnds",
+        "vmro3"
+      ],
       "raw_payload_bytes": 51099432,
       "raw_payload_mib": 48.732215881347656,
-      "file_to_raw_payload_ratio": 0.3313394755542488
+      "file_to_raw_payload_ratio": 0.3313394755542488,
+      "vmro3_hdf5_chunk_storage": {
+        "n_chunks": 16,
+        "raw_chunk_bytes": 3193344,
+        "raw_chunk_mib": 3.04541015625,
+        "storage_bytes_sum": 16887923,
+        "storage_mib_sum": 16.105578422546387,
+        "chunk_bytes_min": 615838,
+        "chunk_bytes_max": 1499907,
+        "chunk_bytes_mean": 1055495.1875,
+        "chunk_compression_ratio_mean": 0.3305297479695266,
+        "chunk_bytes_sample": [
+          1495192,
+          1496772,
+          1491466,
+          1490528,
+          617285,
+          617486,
+          618280,
+          618165,
+          1499907,
+          1490916,
+          1492615,
+          1486960,
+          620832,
+          619448,
+          615838,
+          616233
+        ]
+      },
+      "vmro3_numeric_stats": {
+        "n_total": 12773376,
+        "n_finite": 12773376,
+        "n_missing_or_nonfinite": 0,
+        "finite_min": 3.929509606592774e-09,
+        "finite_max": 1.1217255632800516e-05,
+        "finite_mean": 2.462225875233832e-06,
+        "finite_std": 2.1374216321438857e-06,
+        "adjacent_difference_stats": {
+          "time": {
+            "mean_abs_diff": 1.7257110204855457e-07,
+            "median_abs_diff": 7.348171493504196e-08,
+            "p95_abs_diff": 6.834709438408026e-07
+          },
+          "plev": {
+            "mean_abs_diff": 1.7909610435945374e-07,
+            "median_abs_diff": 0.0,
+            "p95_abs_diff": 1.005586909741396e-06
+          },
+          "lat": {
+            "mean_abs_diff": 3.293899873040161e-08,
+            "median_abs_diff": 1.5258365237968974e-08,
+            "p95_abs_diff": 1.3168142913855238e-07
+          },
+          "lon": {
+            "mean_abs_diff": 4.986698564572972e-09,
+            "median_abs_diff": 2.3723032427369617e-09,
+            "p95_abs_diff": 1.9316757970955223e-08
+          }
+        }
+      }
     }
   },
   "comparisons": {
     "original_processed": {
+      "variable_order_matches_reference": false,
       "vmro3_dtype_matches_reference": true,
       "vmro3_filters_chunking_match_reference": true,
       "all_common_filters_chunking_match_reference": {
@@ -964,9 +1249,60 @@
         "lon": true,
         "lon_bnds": true,
         "vmro3": true
+      },
+      "coordinates_and_bounds_vs_reference": {
+        "time": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "time_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "plev": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "plev_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lat": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lat_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lon": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lon_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        }
       }
     },
     "filled": {
+      "variable_order_matches_reference": false,
       "vmro3_dtype_matches_reference": true,
       "vmro3_filters_chunking_match_reference": true,
       "all_common_filters_chunking_match_reference": {
@@ -979,9 +1315,60 @@
         "lon": true,
         "lon_bnds": true,
         "vmro3": true
+      },
+      "coordinates_and_bounds_vs_reference": {
+        "time": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "time_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "plev": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "plev_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lat": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lat_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lon": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lon_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        }
       }
     },
     "filled_netcdf4_classic": {
+      "variable_order_matches_reference": true,
       "vmro3_dtype_matches_reference": true,
       "vmro3_filters_chunking_match_reference": true,
       "all_common_filters_chunking_match_reference": {
@@ -994,6 +1381,56 @@
         "lon": true,
         "lon_bnds": true,
         "vmro3": true
+      },
+      "coordinates_and_bounds_vs_reference": {
+        "time": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "time_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "plev": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "plev_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lat": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lat_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lon": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        },
+        "lon_bnds": {
+          "present_in_both": true,
+          "same_shape": true,
+          "exact_equal": true,
+          "max_abs_diff": 0.0
+        }
       }
     }
   },
