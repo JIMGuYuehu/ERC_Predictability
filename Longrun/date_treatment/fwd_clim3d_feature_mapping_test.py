@@ -569,10 +569,50 @@ def save_figures(pairs: pd.DataFrame, summary: pd.DataFrame, scores: pd.DataFram
     ax.axhline(float(all50.mae_days), color="0.15", lw=1, ls="--", label=f"mean abs = {all50.mae_days:.2f} d")
     ax.set_xlabel("Mapped pair id")
     ax.set_ylabel("|local - Marina| FWD at 50 hPa (days)")
-    ax.set_title("FWD mismatch after U-field year matching")
+    ax.set_title("FWD mismatch after feature-based year matching")
     ax.legend(loc="upper right", fontsize=8, ncol=2, frameon=False)
     fig.savefig(PLOT_DIR / "clim3d_feature_matched_fwd50_abs_error.png", dpi=180)
     fig.savefig(PLOT_DIR / "clim3d_feature_matched_fwd50_abs_error.svg")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(9.2, 3.6), constrained_layout=True)
+    for chunk_id, group in pairs.groupby("chunk_id"):
+        chunk_id = int(chunk_id)
+        color = colors.get(chunk_id, "0.4")
+        marina_start = int(group["marina_year"].min())
+        marina_end = int(group["marina_year"].max())
+        local_start = int(group["our_year"].min())
+        local_end = int(group["our_year"].max())
+        marina_mid = 0.5 * (marina_start + marina_end)
+        local_mid = 0.5 * (local_start + local_end)
+        chunk_label = labels.get(chunk_id, f"chunk {chunk_id}")
+
+        ax.plot([marina_start, marina_end], [1.0, 1.0], lw=12, solid_capstyle="butt", color=color, alpha=0.85)
+        ax.plot([local_start, local_end], [0.0, 0.0], lw=12, solid_capstyle="butt", color=color, alpha=0.85)
+        ax.plot([marina_mid, local_mid], [0.86, 0.14], lw=1.3, color=color, alpha=0.9)
+        ax.text(marina_mid, 1.12, f"{marina_start}-{marina_end}", ha="center", va="bottom", fontsize=8)
+        ax.text(local_mid, -0.12, f"{local_start}-{local_end}", ha="center", va="top", fontsize=8)
+        ax.text(
+            local_mid,
+            0.43,
+            chunk_label.replace("chunk ", "c"),
+            ha="center",
+            va="center",
+            fontsize=8,
+            color=color,
+            bbox=dict(facecolor="white", edgecolor=color, alpha=0.88, boxstyle="round,pad=0.2"),
+        )
+
+    ax.set_yticks([1.0, 0.0], ["Marina merged year", "Local cleaned year"])
+    ax.set_xlabel("Nominal year index inside each product")
+    ax.set_xlim(0, max(float(pairs["our_year"].max()), float(pairs["marina_year"].max())) + 8)
+    ax.set_ylim(-0.45, 1.45)
+    ax.grid(axis="x", color="0.88", lw=0.8)
+    ax.set_title("CLIM-3D chunk mapping inferred from field fingerprints")
+    for spine in ["left", "right", "top"]:
+        ax.spines[spine].set_visible(False)
+    fig.savefig(PLOT_DIR / "clim3d_feature_matched_segment_timeline.png", dpi=180)
+    fig.savefig(PLOT_DIR / "clim3d_feature_matched_segment_timeline.svg")
     plt.close(fig)
 
     metric_top = (
