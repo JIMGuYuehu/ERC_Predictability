@@ -29,3 +29,12 @@
 
 - Treat this Markdown file as the persistent repo-local Codex skill for `code_cleaned`.
 - Re-read and follow these rules before making any future code, notebook, script, or documentation change in this repository.
+
+# ML Research Policy
+
+- Place the longrun ozone-loss predictability ML work under `code_cleaned/ML`.
+- All generated research code, notebooks, debug artifacts, reports, figures, and tabular outputs for this work must stay inside `code_cleaned/ML`.
+- During ML exploration, temporary scripts are allowed only inside `code_cleaned/ML`; remove or convert unimportant debug code before finishing a task.
+- Preserve important debug investigations as readable notebooks or reports inside `code_cleaned/ML` when they would help reproduce the reasoning later.
+- After each Codex-made modification batch, run a practical lightweight sanity check, commit only relevant `code_cleaned` files, and push immediately.
+- If a required push fails because of credentials, network, or remote configuration, stop further code/data modifications and report the blocker.
