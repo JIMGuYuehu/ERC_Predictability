@@ -1,4 +1,5 @@
 outputs/*.nc
+!outputs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101_filled_no_missing.nc
 outputs/*.nc4
 outputs/*.tmp
 __pycache__/

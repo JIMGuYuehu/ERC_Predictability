@@ -24,6 +24,7 @@ Run with the repository Conda environment:
 ```bash
 /home/weiji/miniconda3/envs/jimnew/bin/python SWOOSH_DATA_PROCESS/check_swoosh_missing.py
 /home/weiji/miniconda3/envs/jimnew/bin/python SWOOSH_DATA_PROCESS/fill_swoosh_target.py
+/home/weiji/miniconda3/envs/jimnew/bin/python SWOOSH_DATA_PROCESS/plot_swoosh_fill_diagnostics.py
 ```
 
 The filled NetCDF is written to:
@@ -32,8 +33,16 @@ The filled NetCDF is written to:
 SWOOSH_DATA_PROCESS/outputs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101_filled_no_missing.nc
 ```
 
-NetCDF outputs in `outputs/` are intentionally ignored by Git. Small run reports
-are written to `SWOOSH_DATA_PROCESS/reports/`.
+The diagnostic PNG is written to:
+
+```text
+SWOOSH_DATA_PROCESS/plots/O3_NHpolar_2020_original_vs_filled_target_ppmv.png
+```
+
+The final filled NetCDF listed above is kept with the workflow. Other temporary
+NetCDF outputs in `outputs/` remain ignored by Git. Small run reports are written
+to `SWOOSH_DATA_PROCESS/reports/`. Plot outputs in
+`SWOOSH_DATA_PROCESS/plots/` are also kept with the workflow for quick visual QA.
 
 ## Current Run Result
 
