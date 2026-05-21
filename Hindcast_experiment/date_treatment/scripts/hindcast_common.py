@@ -247,7 +247,7 @@ def interp_profile_logp(v_hyb: xr.DataArray, p_hyb: xr.DataArray, p_tgt_pa: Sequ
 
 def area_weights_for_lat(lat: xr.DataArray, lat_min: float = 60.0, lat_max: float = 90.0) -> xr.DataArray:
     weights = np.cos(np.deg2rad(lat))
-    return weights.where((lat >= lat_min) & (lat <= lat_max))
+    return weights.where((lat >= lat_min) & (lat <= lat_max), 0.0).fillna(0.0)
 
 
 def make_encoding(ds: xr.Dataset, float_dtype: str = "float32") -> Dict[str, Mapping[str, object]]:
@@ -289,4 +289,3 @@ def dataset_from_member_arrays(
     ds = xr.Dataset(data_vars=data_vars, coords=coords, attrs=dict(attrs or {}))
     ds["member"].attrs["description"] = "Hindcast ensemble member id parsed from file prefix"
     return ds
-

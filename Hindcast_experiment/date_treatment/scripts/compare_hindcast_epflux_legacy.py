@@ -39,14 +39,17 @@ def corrcoef(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.corrcoef(a[mask], b[mask])[0, 1])
 
 
-def compare_case(case_root: Path, overwrite: bool) -> Optional[Path]:
+def compare_case(case_root: Path, overwrite: bool, qc_output_root: Optional[Path] = None) -> Optional[Path]:
     new_file = case_root / "EPflux_daily_ubar" / "all_waves" / f"EPFLUX_all_waves_{case_root.name}_members_time_plev_lat.nc"
     legacy_dir = case_root / "EPflux_daily"
     if not new_file.exists() or not legacy_dir.is_dir():
         print(f"[SKIP] {case_root.name}: missing new EPFLUX or legacy EPflux_daily")
         return None
 
-    out_dir = case_root / "EPflux_daily_ubar" / "quality_control"
+    if qc_output_root is None:
+        out_dir = case_root / "EPflux_daily_ubar" / "quality_control"
+    else:
+        out_dir = qc_output_root / case_root.name
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file = out_dir / f"{case_root.name}_legacy_Fz_vs_new_ep2_40_80N.csv"
     if out_file.exists() and not overwrite:
@@ -117,9 +120,15 @@ def main(argv: Optional[List[str]] = None) -> None:
     parser.add_argument("--root", type=Path, default=HINDCAST_ROOT)
     parser.add_argument("--cases", nargs="*", default=None)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--qc-output-root",
+        type=Path,
+        default=None,
+        help="Optional QC output root. Defaults to each case's EPflux_daily_ubar/quality_control directory.",
+    )
     args = parser.parse_args(argv)
     for case_root in parse_case_list(args.root, args.cases):
-        compare_case(case_root, overwrite=args.overwrite)
+        compare_case(case_root, overwrite=args.overwrite, qc_output_root=args.qc_output_root)
 
 
 if __name__ == "__main__":
