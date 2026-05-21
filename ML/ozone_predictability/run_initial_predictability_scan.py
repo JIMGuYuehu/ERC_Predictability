@@ -661,6 +661,37 @@ def format_float(value: float, digits: int = 3) -> str:
     return f"{value:.{digits}f}"
 
 
+def markdown_table(df: pd.DataFrame, columns: Optional[Sequence[str]] = None) -> str:
+    """Render a small DataFrame as Markdown without optional dependencies."""
+    if columns is not None:
+        frame = df.loc[:, list(columns)].copy()
+    else:
+        frame = df.copy()
+    if frame.empty:
+        return "_No rows._"
+
+    def cell(value) -> str:
+        if isinstance(value, float):
+            return format_float(value)
+        if isinstance(value, (np.floating,)):
+            return format_float(float(value))
+        return str(value)
+
+    headers = list(frame.columns)
+    rows = [[cell(v) for v in row] for row in frame.to_numpy()]
+    widths = [
+        max(len(str(header)), *(len(row[i]) for row in rows))
+        for i, header in enumerate(headers)
+    ]
+    header_line = "| " + " | ".join(str(h).ljust(widths[i]) for i, h in enumerate(headers)) + " |"
+    sep_line = "| " + " | ".join("-" * widths[i] for i in range(len(headers))) + " |"
+    body = [
+        "| " + " | ".join(row[i].ljust(widths[i]) for i in range(len(headers))) + " |"
+        for row in rows
+    ]
+    return "\n".join([header_line, sep_line] + body)
+
+
 def write_report(
     out_root: Path,
     summary: pd.DataFrame,
@@ -682,7 +713,7 @@ def write_report(
     lines.append("")
     lines.append("## Earliest Usable Lead")
     lines.append("")
-    lines.append(windows.to_markdown(index=False))
+    lines.append(markdown_table(windows))
     lines.append("")
     best = windows.dropna(subset=["earliest_7day_stable_usable_lead_days"]).head(1)
     if not best.empty:
@@ -705,7 +736,7 @@ def write_report(
             "best_top25_hit_rate",
             "best_top25_false_alarm_rate",
         ]
-        lines.append(external_summary[keep_cols].to_markdown(index=False))
+        lines.append(markdown_table(external_summary, keep_cols))
     lines.append("")
     lines.append("## BWCN0008 Trace")
     lines.append("")
@@ -722,7 +753,7 @@ def write_report(
                 .reset_index(name="earliest_top25_alarm_lead_days")
                 .sort_values("earliest_top25_alarm_lead_days", ascending=False)
             )
-            lines.append(grouped.to_markdown(index=False))
+            lines.append(markdown_table(grouped))
     lines.append("")
     lines.append("## Output Files")
     lines.append("")

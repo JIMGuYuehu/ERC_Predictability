@@ -1,0 +1,33 @@
+{
+  "train_dataset": "B2000WCN001002",
+  "external_dataset": "BWCN",
+  "target_start_doy": 60,
+  "cutoff_doy_min": 1,
+  "cutoff_doy_max": 59,
+  "cutoff_step": 1,
+  "short_window_days": 28,
+  "long_window_days": 90,
+  "event_fraction": 0.25,
+  "predictor_sets": {
+    "DYN": [
+      "NAM50_short_mean",
+      "NAM50_short_trend",
+      "EP2_100hPa_40_80N_long_mean"
+    ],
+    "O3_MEMORY": [
+      "O3_short_mean",
+      "O3_short_trend"
+    ],
+    "DYN_PLUS_O3": [
+      "NAM50_short_mean",
+      "NAM50_short_trend",
+      "EP2_100hPa_40_80N_long_mean",
+      "O3_short_mean",
+      "O3_short_trend"
+    ]
+  },
+  "models": [
+    "linear",
+    "random_forest"
+  ]
+}
