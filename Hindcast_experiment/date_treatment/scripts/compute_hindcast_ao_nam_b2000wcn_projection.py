@@ -37,7 +37,6 @@ from hindcast_common import (
     clean_field,
     compute_pressure_mid,
     discover_member_inputs,
-    interp_profile_logp,
     open_dataset,
     parse_case_list,
     write_netcdf_atomic,
@@ -52,10 +51,11 @@ AO_TARGET_LAT = np.arange(20.0, 90.0 + 0.001, 2.5)
 YEAR_RE = re.compile(r"\.cam\.h3\.(\d{4})\.")
 
 
-def date_to_doy(date_values) -> np.ndarray:
+def date_to_calendar_parts(date_values) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     month_lengths = np.array([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], dtype=np.int16)
     month_ends = np.cumsum(month_lengths)
     date_values = np.asarray(date_values, dtype=np.int64)
+    year = (date_values // 10000).astype(np.int32)
     mmdd = date_values % 10000
     month = (mmdd // 100).astype(np.int16)
     day = (mmdd % 100).astype(np.int16)
@@ -65,7 +65,124 @@ def date_to_doy(date_values) -> np.ndarray:
         if np.any(mask):
             prev = int(month_ends[m - 2]) if m > 1 else 0
             doy[mask] = prev + day[mask]
+    return year, month, day, doy
+
+
+def date_to_doy(date_values) -> np.ndarray:
+    _, _, _, doy = date_to_calendar_parts(date_values)
     return doy
+
+
+def assign_calendar_coords(da: xr.DataArray, date_values) -> xr.DataArray:
+    year, month, _, doy = date_to_calendar_parts(date_values)
+    if da.sizes.get("time") != len(doy):
+        raise ValueError("date coordinate length does not match time dimension")
+    return da.assign_coords(
+        dayofyear=("time", doy),
+        month=("time", month),
+        year_month=("time", (year * 100 + month).astype(np.int32)),
+    )
+
+
+def daily_groupby(da: xr.DataArray):
+    if "dayofyear" in da.coords:
+        return da.groupby("dayofyear")
+    return da.groupby("time.dayofyear")
+
+
+def monthly_mean_by_calendar(da: xr.DataArray) -> xr.DataArray:
+    if "year_month" not in da.coords or "month" not in da.coords:
+        out = da.resample(time="1MS").mean().dropna(dim="time", how="all")
+        if "month" not in out.coords:
+            out = out.assign_coords(month=("time", out["time"].dt.month.values.astype(np.int16)))
+        return out
+
+    ym_values = np.asarray(da["year_month"].values)
+    month_values = np.asarray(da["month"].values)
+    out = da.groupby("year_month").mean("time")
+    ym_out = np.asarray(out["year_month"].values)
+    month_out = np.array([month_values[np.where(ym_values == ym)[0][0]] for ym in ym_out], dtype=np.int16)
+    out = out.rename({"year_month": "time"})
+    out = out.assign_coords(time=np.arange(out.sizes["time"], dtype=np.int32), month=("time", month_out))
+    return out.dropna(dim="time", how="all")
+
+
+def interp_profile_logp_extrap(v_hyb: xr.DataArray, p_hyb: xr.DataArray, p_tgt_pa: np.ndarray) -> xr.DataArray:
+    """Log-pressure interpolation with Longrun NAM-style top/bottom extrapolation."""
+
+    p_tgt_pa = np.asarray(p_tgt_pa, dtype=np.float64)
+
+    def _interp_col(vcol, pcol):
+        vcol = np.asarray(vcol, dtype=np.float64)
+        pcol = np.asarray(pcol, dtype=np.float64)
+        valid = np.isfinite(vcol) & np.isfinite(pcol) & (pcol > 0.0)
+        if valid.sum() < 2:
+            return np.full(p_tgt_pa.shape, np.nan, dtype=np.float64)
+
+        p_use = pcol[valid]
+        v_use = vcol[valid]
+        order = np.argsort(p_use)
+        p_use = p_use[order]
+        v_use = v_use[order]
+
+        lp = np.log(p_use)
+        ltp = np.log(p_tgt_pa)
+        out = np.interp(ltp, lp, v_use)
+
+        top = ltp < lp[0]
+        if np.any(top):
+            slope_top = (v_use[1] - v_use[0]) / (lp[1] - lp[0])
+            out[top] = v_use[0] + slope_top * (ltp[top] - lp[0])
+
+        bottom = ltp > lp[-1]
+        if np.any(bottom):
+            slope_bottom = (v_use[-1] - v_use[-2]) / (lp[-1] - lp[-2])
+            out[bottom] = v_use[-1] + slope_bottom * (ltp[bottom] - lp[-1])
+        return out
+
+    out = xr.apply_ufunc(
+        _interp_col,
+        v_hyb,
+        p_hyb,
+        input_core_dims=[["lev"], ["lev"]],
+        output_core_dims=[["plev"]],
+        vectorize=True,
+        dask="parallelized",
+        output_dtypes=[np.float64],
+        dask_gufunc_kwargs={"output_sizes": {"plev": len(p_tgt_pa)}},
+    )
+    return out.assign_coords(plev=("plev", p_tgt_pa))
+
+
+def fill_lat_gaps(da: xr.DataArray) -> xr.DataArray:
+    if "lat" not in da.dims:
+        return da
+    lat_values = np.asarray(da["lat"].values, dtype=np.float64)
+
+    def _fill(profile):
+        profile = np.asarray(profile, dtype=np.float64)
+        valid = np.isfinite(profile)
+        if valid.all():
+            return profile
+        if valid.sum() == 0:
+            return profile
+        if valid.sum() == 1:
+            out = np.full(profile.shape, profile[valid][0], dtype=np.float64)
+            return out
+        return np.interp(lat_values, lat_values[valid], profile[valid])
+
+    out = xr.apply_ufunc(
+        _fill,
+        da,
+        input_core_dims=[["lat"]],
+        output_core_dims=[["lat"]],
+        vectorize=True,
+        dask="parallelized",
+        output_dtypes=[np.float64],
+        dask_gufunc_kwargs={"output_sizes": {"lat": len(lat_values)}},
+    )
+    out = out.assign_coords(lat=("lat", lat_values))
+    return out.transpose(*da.dims)
 
 
 def parse_year(path: Path) -> Optional[int]:
@@ -101,9 +218,11 @@ def load_longrun_year_z3_zm(payload) -> Optional[xr.DataArray]:
         p_mid = ds_z["hyam"] * ds_z["P0"] + ds_z["hybm"] * ds_ps["PS"]
         z3 = clean_field(ds_z["Z3"]).sel(lat=slice(LAT_MIN, LAT_MAX))
         p_mid = p_mid.sel(lat=slice(LAT_MIN, LAT_MAX))
-        z_plev = interp_profile_logp(z3, p_mid, TARGET_NAM_PLEV_PA)
+        z_plev = interp_profile_logp_extrap(z3, p_mid, TARGET_NAM_PLEV_PA)
         z_zm = z_plev.mean("lon", skipna=True).transpose("time", "plev", "lat")
         z_zm = z_zm.rename({"plev": "lev"}).assign_coords(lev=("lev", TARGET_NAM_PLEV_HPA))
+        if "date" in ds_z:
+            z_zm = assign_calendar_coords(z_zm, ds_z["date"].values)
         return z_zm.load()
     except Exception as exc:
         print(f"[WARN] longrun year {year}: {type(exc).__name__}: {exc}")
@@ -158,12 +277,13 @@ def take_clim_by_doy(clim: xr.DataArray, doy: np.ndarray, time_coord: xr.DataArr
 
 def build_reference(z3_zm_all: xr.DataArray):
     ref: Dict[str, object] = {}
+    z3_zm_all = fill_lat_gaps(z3_zm_all)
 
-    z_ao = z3_zm_all.sel(lev=AO_PLEV_HPA, method="nearest").interp(lat=AO_TARGET_LAT)
+    z_ao = fill_lat_gaps(z3_zm_all.sel(lev=AO_PLEV_HPA, method="nearest").interp(lat=AO_TARGET_LAT))
     mask = valid_time_mask(z_ao)
     z_ao = z_ao.sel(time=mask)
-    clim_ao = z_ao.groupby("time.dayofyear").mean("time")
-    ao_anom = z_ao.groupby("time.dayofyear") - clim_ao
+    clim_ao = daily_groupby(z_ao).mean("time")
+    ao_anom = daily_groupby(z_ao) - clim_ao
     if "dayofyear" in ao_anom.coords:
         ao_anom = ao_anom.drop_vars("dayofyear")
     gh_layer = np.asarray(ao_anom, dtype=np.float64)
@@ -191,12 +311,12 @@ def build_reference(z3_zm_all: xr.DataArray):
     )
 
     z_valid = z3_zm_all.sel(time=valid_time_mask(z3_zm_all))
-    z_month = z_valid.resample(time="1MS").mean().dropna(dim="time", how="all")
-    clim_mon = z_month.groupby("time.month").mean("time")
-    anom_mon = z_month.groupby("time.month") - clim_mon
-    clim_doy = z_valid.groupby("time.dayofyear").mean("time")
+    z_month = monthly_mean_by_calendar(z_valid)
+    clim_mon = z_month.groupby("month").mean("time")
+    anom_mon = z_month.groupby("month") - clim_mon
+    clim_doy = daily_groupby(z_valid).mean("time")
     clim_doy_smooth = clim_doy.rolling(dayofyear=21, center=True, min_periods=1).mean()
-    anom_doy = z_valid.groupby("time.dayofyear") - clim_doy_smooth
+    anom_doy = daily_groupby(z_valid) - clim_doy_smooth
     if "dayofyear" in anom_doy.coords:
         anom_doy = anom_doy.drop_vars("dayofyear")
 
@@ -263,7 +383,7 @@ def load_member_z3_zm(paths: Dict[str, Path]) -> Tuple[xr.DataArray, xr.Dataset]
     p_mid = compute_pressure_mid(ds_z)
     z3 = clean_field(ds_z["Z3"]).sel(lat=slice(LAT_MIN, LAT_MAX))
     p_mid = p_mid.sel(lat=slice(LAT_MIN, LAT_MAX))
-    z_plev = interp_profile_logp(z3, p_mid, TARGET_NAM_PLEV_PA)
+    z_plev = interp_profile_logp_extrap(z3, p_mid, TARGET_NAM_PLEV_PA)
     z_zm = z_plev.mean("lon", skipna=True).transpose("time", "plev", "lat")
     z_zm = z_zm.rename({"plev": "lev"}).assign_coords(lev=("lev", TARGET_NAM_PLEV_HPA))
     return z_zm.load(), ds_z

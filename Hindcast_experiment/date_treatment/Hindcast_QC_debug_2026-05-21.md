@@ -31,12 +31,16 @@ Checked `/mnt/soclim0/public_data/weiji/Hindcast` after the current runs:
 | `EPflux_daily_ubar` | `24/24` | `719` | all processing summaries are `ok` |
 | `Eddyheatflux_daily` | `24/24` | `719` | all processing summaries are `ok` |
 | `final_warming_date` | `24/24` | `719` | all processing summaries are `ok` |
-| `partial_O3` main NetCDF | `0/24` | n/a | previous run failed from the latitude-weight NaN bug |
+| `partial_O3` main NetCDF | `4/24` | n/a | first four cases are complete; remaining summaries still show the old latitude-weight NaN bug |
 | `NAM_B2000WCN_projection` | `0/24` | n/a | not generated yet |
 
 The partial O3 bug is the same root cause as the EPFlux QC error. A no-write
 single-member test after the fix produced valid `1-100 hPa`, `30-70 hPa`, and
 `30-100 hPa` partial-column variables.
+
+Cases currently present for `partial_O3` are `0003-02`, `0003-03`, `0008-01`,
+and `0008-02`. The remaining case summaries should be overwritten with the
+fixed code.
 
 ## OMEGA / EPFlux Consistency
 
@@ -108,6 +112,22 @@ Z3 onto those B2000WCN001002 first EOF modes. It does not train Hindcast EOFs.
 However, no Hindcast `NAM_B2000WCN_projection` outputs are present yet, so this
 step still needs to be run.
 
+Two additional AO/NAM robustness fixes were added after debugging:
+
+- Daily and monthly grouping now uses explicit CAM `date`-derived coordinates
+  (`dayofyear`, `month`, and `year_month`) when available, instead of depending
+  on xarray virtual `time.dayofyear` for every file.
+- AO/NAM Z3 pressure interpolation now uses the same log-pressure top/bottom
+  extrapolation style as the Longrun NAM notebook. Remaining latitude gaps in
+  the zonal-mean pressure-level Z3 field are filled along latitude before EOF
+  training/projection.
+
+No-write validation:
+
+- Current partial O3 code produced valid single-member output for `0019-02`.
+- B2000WCN reference loading with two years successfully built AO/NAM reference
+  objects with `29` AO latitudes and `31` NAM pressure levels.
+
 ## Next Commands
 
 Because partial O3 and AO/NAM are not complete, run these next:
@@ -134,4 +154,3 @@ Then rerun inventory/QC:
   Hindcast_experiment/date_treatment/scripts/compare_hindcast_epflux_legacy.py \
   --overwrite
 ```
-
