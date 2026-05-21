@@ -1,0 +1,1004 @@
+{
+  "created_utc": "2026-05-21T13:03:18.110393+00:00",
+  "files": {
+    "reference": {
+      "path": "/mnt/soclim0/andreas/vmro3_input4MIPs_ozone_CMIP6_UReading-CCMI_2020.nc",
+      "file_size_bytes": 42855537,
+      "file_size_mib": 40.870224952697754,
+      "data_model": "NETCDF4",
+      "disk_format": "HDF5",
+      "dimensions": {
+        "time": {
+          "size": 14,
+          "isunlimited": false
+        },
+        "nb2": {
+          "size": 2,
+          "isunlimited": false
+        },
+        "plev": {
+          "size": 66,
+          "isunlimited": false
+        },
+        "lat": {
+          "size": 96,
+          "isunlimited": false
+        },
+        "lon": {
+          "size": 144,
+          "isunlimited": false
+        }
+      },
+      "variables": {
+        "time": {
+          "dtype": "float64",
+          "dimensions": [
+            "time"
+          ],
+          "shape": [
+            14
+          ],
+          "raw_nbytes": 112,
+          "raw_mib": 0.0001068115234375,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "time_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "time",
+            "nb2"
+          ],
+          "shape": [
+            14,
+            2
+          ],
+          "raw_nbytes": 224,
+          "raw_mib": 0.000213623046875,
+          "chunking": [
+            14,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "plev": {
+          "dtype": "float32",
+          "dimensions": [
+            "plev"
+          ],
+          "shape": [
+            66
+          ],
+          "raw_nbytes": 264,
+          "raw_mib": 0.00025177001953125,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "plev_bnds": {
+          "dtype": "float32",
+          "dimensions": [
+            "plev",
+            "nb2"
+          ],
+          "shape": [
+            66,
+            2
+          ],
+          "raw_nbytes": 528,
+          "raw_mib": 0.0005035400390625,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lat": {
+          "dtype": "float32",
+          "dimensions": [
+            "lat"
+          ],
+          "shape": [
+            96
+          ],
+          "raw_nbytes": 384,
+          "raw_mib": 0.0003662109375,
+          "chunking": [
+            96
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lat_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "lat",
+            "nb2"
+          ],
+          "shape": [
+            96,
+            2
+          ],
+          "raw_nbytes": 1536,
+          "raw_mib": 0.00146484375,
+          "chunking": [
+            96,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lon": {
+          "dtype": "float32",
+          "dimensions": [
+            "lon"
+          ],
+          "shape": [
+            144
+          ],
+          "raw_nbytes": 576,
+          "raw_mib": 0.00054931640625,
+          "chunking": [
+            144
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lon_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "lon",
+            "nb2"
+          ],
+          "shape": [
+            144,
+            2
+          ],
+          "raw_nbytes": 2304,
+          "raw_mib": 0.002197265625,
+          "chunking": [
+            144,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "vmro3": {
+          "dtype": "float32",
+          "dimensions": [
+            "time",
+            "plev",
+            "lat",
+            "lon"
+          ],
+          "shape": [
+            14,
+            66,
+            96,
+            144
+          ],
+          "raw_nbytes": 51093504,
+          "raw_mib": 48.7265625,
+          "chunking": [
+            7,
+            33,
+            48,
+            72
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": 1.0000000200408773e+20
+        }
+      },
+      "raw_payload_bytes": 51099432,
+      "raw_payload_mib": 48.732215881347656,
+      "file_to_raw_payload_ratio": 0.8386695374617863
+    },
+    "original_processed": {
+      "path": "/mnt/soclim0/public_data/weiji/swoosh/processed_like_input4MIPs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101.nc",
+      "file_size_bytes": 16923144,
+      "file_size_mib": 16.13916778564453,
+      "data_model": "NETCDF4",
+      "disk_format": "HDF5",
+      "dimensions": {
+        "time": {
+          "size": 14,
+          "isunlimited": false
+        },
+        "plev": {
+          "size": 66,
+          "isunlimited": false
+        },
+        "lat": {
+          "size": 96,
+          "isunlimited": false
+        },
+        "lon": {
+          "size": 144,
+          "isunlimited": false
+        },
+        "nb2": {
+          "size": 2,
+          "isunlimited": false
+        }
+      },
+      "variables": {
+        "time": {
+          "dtype": "float64",
+          "dimensions": [
+            "time"
+          ],
+          "shape": [
+            14
+          ],
+          "raw_nbytes": 112,
+          "raw_mib": 0.0001068115234375,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "plev": {
+          "dtype": "float32",
+          "dimensions": [
+            "plev"
+          ],
+          "shape": [
+            66
+          ],
+          "raw_nbytes": 264,
+          "raw_mib": 0.00025177001953125,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lat": {
+          "dtype": "float32",
+          "dimensions": [
+            "lat"
+          ],
+          "shape": [
+            96
+          ],
+          "raw_nbytes": 384,
+          "raw_mib": 0.0003662109375,
+          "chunking": [
+            96
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lon": {
+          "dtype": "float32",
+          "dimensions": [
+            "lon"
+          ],
+          "shape": [
+            144
+          ],
+          "raw_nbytes": 576,
+          "raw_mib": 0.00054931640625,
+          "chunking": [
+            144
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "time_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "time",
+            "nb2"
+          ],
+          "shape": [
+            14,
+            2
+          ],
+          "raw_nbytes": 224,
+          "raw_mib": 0.000213623046875,
+          "chunking": [
+            14,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "plev_bnds": {
+          "dtype": "float32",
+          "dimensions": [
+            "plev",
+            "nb2"
+          ],
+          "shape": [
+            66,
+            2
+          ],
+          "raw_nbytes": 528,
+          "raw_mib": 0.0005035400390625,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lat_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "lat",
+            "nb2"
+          ],
+          "shape": [
+            96,
+            2
+          ],
+          "raw_nbytes": 1536,
+          "raw_mib": 0.00146484375,
+          "chunking": [
+            96,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lon_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "lon",
+            "nb2"
+          ],
+          "shape": [
+            144,
+            2
+          ],
+          "raw_nbytes": 2304,
+          "raw_mib": 0.002197265625,
+          "chunking": [
+            144,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "vmro3": {
+          "dtype": "float32",
+          "dimensions": [
+            "time",
+            "plev",
+            "lat",
+            "lon"
+          ],
+          "shape": [
+            14,
+            66,
+            96,
+            144
+          ],
+          "raw_nbytes": 51093504,
+          "raw_mib": 48.7265625,
+          "chunking": [
+            7,
+            33,
+            48,
+            72
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": 1.0000000200408773e+20
+        }
+      },
+      "raw_payload_bytes": 51099432,
+      "raw_payload_mib": 48.732215881347656,
+      "file_to_raw_payload_ratio": 0.33118066752679365
+    },
+    "filled": {
+      "path": "/mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101_filled_no_missing.nc",
+      "file_size_bytes": 16930751,
+      "file_size_mib": 16.146422386169434,
+      "data_model": "NETCDF4",
+      "disk_format": "HDF5",
+      "dimensions": {
+        "time": {
+          "size": 14,
+          "isunlimited": false
+        },
+        "plev": {
+          "size": 66,
+          "isunlimited": false
+        },
+        "lat": {
+          "size": 96,
+          "isunlimited": false
+        },
+        "lon": {
+          "size": 144,
+          "isunlimited": false
+        },
+        "nb2": {
+          "size": 2,
+          "isunlimited": false
+        }
+      },
+      "variables": {
+        "time": {
+          "dtype": "float64",
+          "dimensions": [
+            "time"
+          ],
+          "shape": [
+            14
+          ],
+          "raw_nbytes": 112,
+          "raw_mib": 0.0001068115234375,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "plev": {
+          "dtype": "float32",
+          "dimensions": [
+            "plev"
+          ],
+          "shape": [
+            66
+          ],
+          "raw_nbytes": 264,
+          "raw_mib": 0.00025177001953125,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lat": {
+          "dtype": "float32",
+          "dimensions": [
+            "lat"
+          ],
+          "shape": [
+            96
+          ],
+          "raw_nbytes": 384,
+          "raw_mib": 0.0003662109375,
+          "chunking": [
+            96
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lon": {
+          "dtype": "float32",
+          "dimensions": [
+            "lon"
+          ],
+          "shape": [
+            144
+          ],
+          "raw_nbytes": 576,
+          "raw_mib": 0.00054931640625,
+          "chunking": [
+            144
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "time_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "time",
+            "nb2"
+          ],
+          "shape": [
+            14,
+            2
+          ],
+          "raw_nbytes": 224,
+          "raw_mib": 0.000213623046875,
+          "chunking": [
+            14,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "plev_bnds": {
+          "dtype": "float32",
+          "dimensions": [
+            "plev",
+            "nb2"
+          ],
+          "shape": [
+            66,
+            2
+          ],
+          "raw_nbytes": 528,
+          "raw_mib": 0.0005035400390625,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lat_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "lat",
+            "nb2"
+          ],
+          "shape": [
+            96,
+            2
+          ],
+          "raw_nbytes": 1536,
+          "raw_mib": 0.00146484375,
+          "chunking": [
+            96,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lon_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "lon",
+            "nb2"
+          ],
+          "shape": [
+            144,
+            2
+          ],
+          "raw_nbytes": 2304,
+          "raw_mib": 0.002197265625,
+          "chunking": [
+            144,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "vmro3": {
+          "dtype": "float32",
+          "dimensions": [
+            "time",
+            "plev",
+            "lat",
+            "lon"
+          ],
+          "shape": [
+            14,
+            66,
+            96,
+            144
+          ],
+          "raw_nbytes": 51093504,
+          "raw_mib": 48.7265625,
+          "chunking": [
+            7,
+            33,
+            48,
+            72
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": 1.0000000200408773e+20
+        }
+      },
+      "raw_payload_bytes": 51099432,
+      "raw_payload_mib": 48.732215881347656,
+      "file_to_raw_payload_ratio": 0.33132953415216043
+    },
+    "filled_netcdf4_classic": {
+      "path": "/mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101_filled_no_missing_netcdf4_classic.nc",
+      "file_size_bytes": 16931259,
+      "file_size_mib": 16.146906852722168,
+      "data_model": "NETCDF4_CLASSIC",
+      "disk_format": "HDF5",
+      "dimensions": {
+        "time": {
+          "size": 14,
+          "isunlimited": false
+        },
+        "nb2": {
+          "size": 2,
+          "isunlimited": false
+        },
+        "plev": {
+          "size": 66,
+          "isunlimited": false
+        },
+        "lat": {
+          "size": 96,
+          "isunlimited": false
+        },
+        "lon": {
+          "size": 144,
+          "isunlimited": false
+        }
+      },
+      "variables": {
+        "time": {
+          "dtype": "float64",
+          "dimensions": [
+            "time"
+          ],
+          "shape": [
+            14
+          ],
+          "raw_nbytes": 112,
+          "raw_mib": 0.0001068115234375,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "time_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "time",
+            "nb2"
+          ],
+          "shape": [
+            14,
+            2
+          ],
+          "raw_nbytes": 224,
+          "raw_mib": 0.000213623046875,
+          "chunking": [
+            14,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "plev": {
+          "dtype": "float32",
+          "dimensions": [
+            "plev"
+          ],
+          "shape": [
+            66
+          ],
+          "raw_nbytes": 264,
+          "raw_mib": 0.00025177001953125,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "plev_bnds": {
+          "dtype": "float32",
+          "dimensions": [
+            "plev",
+            "nb2"
+          ],
+          "shape": [
+            66,
+            2
+          ],
+          "raw_nbytes": 528,
+          "raw_mib": 0.0005035400390625,
+          "chunking": "contiguous",
+          "filters": {
+            "zlib": false,
+            "complevel": 0,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lat": {
+          "dtype": "float32",
+          "dimensions": [
+            "lat"
+          ],
+          "shape": [
+            96
+          ],
+          "raw_nbytes": 384,
+          "raw_mib": 0.0003662109375,
+          "chunking": [
+            96
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lat_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "lat",
+            "nb2"
+          ],
+          "shape": [
+            96,
+            2
+          ],
+          "raw_nbytes": 1536,
+          "raw_mib": 0.00146484375,
+          "chunking": [
+            96,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lon": {
+          "dtype": "float32",
+          "dimensions": [
+            "lon"
+          ],
+          "shape": [
+            144
+          ],
+          "raw_nbytes": 576,
+          "raw_mib": 0.00054931640625,
+          "chunking": [
+            144
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "lon_bnds": {
+          "dtype": "float64",
+          "dimensions": [
+            "lon",
+            "nb2"
+          ],
+          "shape": [
+            144,
+            2
+          ],
+          "raw_nbytes": 2304,
+          "raw_mib": 0.002197265625,
+          "chunking": [
+            144,
+            2
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": NaN
+        },
+        "vmro3": {
+          "dtype": "float32",
+          "dimensions": [
+            "time",
+            "plev",
+            "lat",
+            "lon"
+          ],
+          "shape": [
+            14,
+            66,
+            96,
+            144
+          ],
+          "raw_nbytes": 51093504,
+          "raw_mib": 48.7265625,
+          "chunking": [
+            7,
+            33,
+            48,
+            72
+          ],
+          "filters": {
+            "zlib": true,
+            "complevel": 9,
+            "shuffle": false,
+            "fletcher32": false
+          },
+          "_FillValue": 1.0000000200408773e+20
+        }
+      },
+      "raw_payload_bytes": 51099432,
+      "raw_payload_mib": 48.732215881347656,
+      "file_to_raw_payload_ratio": 0.3313394755542488
+    }
+  },
+  "comparisons": {
+    "original_processed": {
+      "vmro3_dtype_matches_reference": true,
+      "vmro3_filters_chunking_match_reference": true,
+      "all_common_filters_chunking_match_reference": {
+        "time": true,
+        "time_bnds": true,
+        "plev": true,
+        "plev_bnds": true,
+        "lat": true,
+        "lat_bnds": true,
+        "lon": true,
+        "lon_bnds": true,
+        "vmro3": true
+      }
+    },
+    "filled": {
+      "vmro3_dtype_matches_reference": true,
+      "vmro3_filters_chunking_match_reference": true,
+      "all_common_filters_chunking_match_reference": {
+        "time": true,
+        "time_bnds": true,
+        "plev": true,
+        "plev_bnds": true,
+        "lat": true,
+        "lat_bnds": true,
+        "lon": true,
+        "lon_bnds": true,
+        "vmro3": true
+      }
+    },
+    "filled_netcdf4_classic": {
+      "vmro3_dtype_matches_reference": true,
+      "vmro3_filters_chunking_match_reference": true,
+      "all_common_filters_chunking_match_reference": {
+        "time": true,
+        "time_bnds": true,
+        "plev": true,
+        "plev_bnds": true,
+        "lat": true,
+        "lat_bnds": true,
+        "lon": true,
+        "lon_bnds": true,
+        "vmro3": true
+      }
+    }
+  },
+  "conclusion": {
+    "vmro3_dtype": "float32",
+    "size_difference_main_reason": "The CMIP6 reference and SWOOSH files both store vmro3 as float32, so the 41 MB vs 17 MB difference is not caused by double vs float32 precision in vmro3. The common variables also use the same zlib level, shuffle setting, fletcher32 setting, and chunking as the reference. The remaining size difference is therefore due to HDF5/NetCDF4 compressibility of the actual data values: the SWOOSH ozone field compresses substantially better than the CMIP6 reference field."
+  }
+}
