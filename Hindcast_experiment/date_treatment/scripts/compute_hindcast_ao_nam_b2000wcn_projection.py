@@ -395,12 +395,13 @@ def project_member(payload) -> Tuple[str, Optional[xr.Dataset], Dict[str, str]]:
     ds_z = None
     try:
         z_zm, ds_z = load_member_z3_zm(paths)
+        z_zm = fill_lat_gaps(z_zm)
         if "date" not in ds_z:
             raise KeyError("Z3 file has no CAM date variable")
         doy = date_to_doy(ds_z["date"].values)
         lead_time = np.arange(z_zm.sizes["time"], dtype=np.int16)
 
-        z_ao = z_zm.sel(lev=AO_PLEV_HPA, method="nearest").interp(lat=ref["AO_lat_target"])
+        z_ao = fill_lat_gaps(z_zm.sel(lev=AO_PLEV_HPA, method="nearest").interp(lat=ref["AO_lat_target"]))
         ao_anom = z_ao - take_clim_by_doy(ref["AO_clim_doy"], doy, z_ao["time"])
         gh_layer = np.asarray(ao_anom, dtype=np.float64)
         ao = ref["AO_solver"].projectField(gh_layer, neofs=1, eofscaling=1, weighted=True)
