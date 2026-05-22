@@ -10,6 +10,7 @@
 
 - Treat `/home/weiji/restart_exam/code_cleaned` as the only writable project scope for Codex work.
 - Do not create, edit, delete, format, move, commit, or otherwise modify files outside `/home/weiji/restart_exam/code_cleaned` unless the user explicitly gives a newer instruction for that specific operation.
+- Never delete, move, overwrite, or otherwise mutate data outside `/home/weiji/restart_exam/code_cleaned`; for external data directories, only inspect and report what the user may choose to remove manually.
 - Prefer running commands from `/home/weiji/restart_exam/code_cleaned` so git operations and generated files stay inside this repository.
 
 # GitHub Traceability Policy
