@@ -185,6 +185,19 @@ def fill_lat_gaps(da: xr.DataArray) -> xr.DataArray:
     return out.transpose(*da.dims)
 
 
+def prepare_ao_field_codeb(z3_1000_zm: xr.DataArray, target_lat=AO_TARGET_LAT) -> xr.DataArray:
+    """Prepare the Longrun Code-B modified AO input: 1000 hPa zonal mean on 2.5 deg lat grid."""
+
+    target_lat = np.asarray(target_lat, dtype=np.float64)
+    da = z3_1000_zm.sortby("lat")
+    # CAM/WACCM f19 starts slightly north of 20N; Longrun Nam_calculation uses
+    # boundary extrapolation so the 20N target does not become an all-NaN column.
+    da = da.interp(lat=target_lat, kwargs={"fill_value": "extrapolate"})
+    da = da.assign_coords(lat=("lat", target_lat))
+    da.name = "Z3_1000_ZM_interp"
+    return da
+
+
 def parse_year(path: Path) -> Optional[int]:
     m = YEAR_RE.search(path.name)
     return int(m.group(1)) if m else None
@@ -279,7 +292,7 @@ def build_reference(z3_zm_all: xr.DataArray):
     ref: Dict[str, object] = {}
     z3_zm_all = fill_lat_gaps(z3_zm_all)
 
-    z_ao = fill_lat_gaps(z3_zm_all.sel(lev=AO_PLEV_HPA, method="nearest").interp(lat=AO_TARGET_LAT))
+    z_ao = prepare_ao_field_codeb(z3_zm_all.sel(lev=AO_PLEV_HPA, method="nearest"))
     mask = valid_time_mask(z_ao)
     z_ao = z_ao.sel(time=mask)
     clim_ao = daily_groupby(z_ao).mean("time")
@@ -365,7 +378,7 @@ def save_reference_modes(ref: Dict[str, object], out_file: Path, overwrite: bool
         {
             "title": "B2000WCN001002 AO/NAM first EOF modes used for Hindcast projection",
             "source": str(B2000WCN_ROOT),
-            "AO_method": "Longrun Code-B modified weights, 1000 hPa, 20-90N, zonal mean",
+            "AO_method": "Longrun Code-B modified weights, 1000 hPa zonal mean, 20-90N, 2.5 degree latitude grid with boundary extrapolation",
             "NAM_method": "Longrun monthly EOF by pressure level, daily projection climatology",
         }
     )
@@ -401,7 +414,7 @@ def project_member(payload) -> Tuple[str, Optional[xr.Dataset], Dict[str, str]]:
         doy = date_to_doy(ds_z["date"].values)
         lead_time = np.arange(z_zm.sizes["time"], dtype=np.int16)
 
-        z_ao = fill_lat_gaps(z_zm.sel(lev=AO_PLEV_HPA, method="nearest").interp(lat=ref["AO_lat_target"]))
+        z_ao = prepare_ao_field_codeb(z_zm.sel(lev=AO_PLEV_HPA, method="nearest"), ref["AO_lat_target"])
         ao_anom = z_ao - take_clim_by_doy(ref["AO_clim_doy"], doy, z_ao["time"])
         gh_layer = np.asarray(ao_anom, dtype=np.float64)
         ao = ref["AO_solver"].projectField(gh_layer, neofs=1, eofscaling=1, weighted=True)
