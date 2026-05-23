@@ -1,0 +1,7 @@
+metric,label,R_vs_RMSE,P,definition,R_aux,P_aux
+all_waves,All,0.5041865776288044,0.0044985468536748105,"mean -ep2 vertical EP-flux component at 100 hPa, cos-lat mean 40-80N, Jan20-Feb10; not EP-flux divergence",,
+wave1,W1,0.23935435215053694,0.2026971624297401,"mean -ep2 vertical EP-flux component at 100 hPa, cos-lat mean 40-80N, Jan20-Feb10; not EP-flux divergence",,
+wave2,W2,0.38558906841815455,0.03534619216019266,"mean -ep2 vertical EP-flux component at 100 hPa, cos-lat mean 40-80N, Jan20-Feb10; not EP-flux divergence",,
+wave_rest,Rest,0.07061269634026358,0.710793232819525,"mean -ep2 vertical EP-flux component at 100 hPa, cos-lat mean 40-80N, Jan20-Feb10; not EP-flux divergence",,
+wave1_plus_wave2,W1+W2,0.45141717497694805,0.012281293182060943,"mean -ep2 vertical EP-flux component at 100 hPa, cos-lat mean 40-80N, Jan20-Feb10; not EP-flux divergence",,
+all_waves_vs_wave1_plus_wave2,All vs W1+W2,,,"mean -ep2 vertical EP-flux component at 100 hPa, cos-lat mean 40-80N, Jan20-Feb10; not EP-flux divergence",0.9573277774340895,1.2515175055171372e-16

@@ -5,9 +5,9 @@ linear_l2,DYN_PLUS_PASSIVE_TRACER,59
 linear_l2,DYN_COUPLED,59
 random_forest,VORTEX_STATE,59
 linear_l2,WAVE_FORCING,59
-gradient_boosting,WAVE_FORCING,58
-random_forest,DYN_COUPLED,58
-gradient_boosting,DYN_COUPLED,57
-random_forest,DYN_PLUS_PASSIVE_TRACER,56
-random_forest,WAVE_FORCING,56
-gradient_boosting,DYN_PLUS_PASSIVE_TRACER,53
+gradient_boosting,DYN_COUPLED,58
+gradient_boosting,WAVE_FORCING,57
+random_forest,WAVE_FORCING,57
+random_forest,DYN_COUPLED,57
+random_forest,DYN_PLUS_PASSIVE_TRACER,53
+gradient_boosting,DYN_PLUS_PASSIVE_TRACER,52
