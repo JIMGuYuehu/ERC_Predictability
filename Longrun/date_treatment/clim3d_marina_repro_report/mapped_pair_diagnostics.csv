@@ -1,6 +1,0 @@
-diagnostic,variant,n_pairs,corr,mean_abs_diff,same_low25_pairs
-mapped 50hPa FWD our-vs-Marina,FWD,197,0.983,1.43,
-mapped Mar-Apr O3 minima our-vs-Marina,raw,198,0.959,20.01,43.0
-mapped Mar-Apr O3 minima our-vs-Marina,rm5_from_raw,198,0.959,20.05,42.0
-mapped Mar-Apr O3 minima our-vs-Marina,rm5_file,198,0.959,20.05,42.0
-mapped Mar-Apr O3 minima our-vs-Marina,rm15,198,0.96,20.13,42.0

@@ -1,5 +1,0 @@
-chunk_id,marina_run,source_start_year,source_end_year,source_n_years,marina_start_year,marina_end_year,shift200_file
-1,007,5,56,52,1,52,False
-2,010,57,104,48,53,100,False
-3,009,5,56,52,101,152,True
-4,011,57,104,48,153,200,True

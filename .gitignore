@@ -2,3 +2,18 @@ __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
 .DS_Store
+
+# Generated diagnostics and local analysis outputs.
+# Keep the repository code-focused; figures, caches, QC tables, and ad-hoc
+# output products should stay local unless explicitly requested otherwise.
+**/outputs/
+**/figures/
+**/plots/
+**/cache/
+**/qc/
+Longrun/date_treatment/clim3d_feature_mapping_test/
+Longrun/date_treatment/clim3d_marina_repro_report/
+
+# Generated inventory snapshots.
+Hindcast_experiment/date_treatment/hindcast_inventory.csv
+Hindcast_experiment/date_treatment/hindcast_raw_omega_inventory.csv
