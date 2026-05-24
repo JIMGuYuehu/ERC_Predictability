@@ -91,7 +91,16 @@ def member_short_id(member) -> str:
         Three-digit member id when detectable; otherwise the original text.
     """
     text = str(member)
-    for pattern in [r"\.(\d{3})\.cam\.h3", r"\.(\d{3})\.", r"-(\d{3})\.cam", r"_(\d{3})$"]:
+    # Hindcast filenames often include an ensemble branch before the
+    # year-month token, e.g. ``...f19_g16.002.0013-02.001...``.  The actual
+    # perturbed member is the number after ``YYYY-MM``, not the branch id.
+    for pattern in [
+        r"\.\d{4}-\d{2}\.(\d{3})(?:\.|_)",
+        r"\.(\d{3})\.cam\.h3",
+        r"-(\d{3})\.cam",
+        r"_(\d{3})$",
+        r"\.(\d{3})\.",
+    ]:
         m = re.search(pattern, text)
         if m:
             return m.group(1)
@@ -380,6 +389,26 @@ def date_mask_from_mmdd_or_leadday(time, start, end):
         dates = pd.to_datetime(values)
         values = dates.year * 10000 + dates.month * 100 + dates.day
     if isinstance(start, (tuple, list)) and isinstance(end, (tuple, list)):
+        raw = np.asarray(values, dtype=np.int64)
+        year, month, day = date_parts(raw)
+        valid_calendar = bool(
+            raw.size
+            and raw.max() >= 10000
+            and np.all((month >= 1) & (month <= 12) & (day >= 1) & (day <= 31))
+        )
+        valid_mmdd = bool(
+            raw.size
+            and raw.max() < 10000
+            and raw.min() >= 101
+            and np.all((month >= 1) & (month <= 12) & (day >= 1) & (day <= 31))
+        )
+        if not (valid_calendar or valid_mmdd):
+            # Some derived EP-flux products only retain a 0-based lead-time
+            # coordinate.  For calendar windows in those products, treat lead
+            # day 0 as Jan 1.  Non-January initialized cases use explicit lead
+            # windows elsewhere in this workflow.
+            lead = np.arange(len(raw))
+            return (lead >= mmdd_to_doy(*start) - 1) & (lead <= mmdd_to_doy(*end) - 1)
         _, month, day = date_parts(values)
         key = month * 100 + day
         return (key >= start[0] * 100 + start[1]) & (key <= end[0] * 100 + end[1])
@@ -415,6 +444,13 @@ def _assign_member_short(da: xr.DataArray) -> xr.DataArray:
         return da
     shorts = [member_short_id(v) for v in da["member"].values]
     return da.assign_coords(member_short=("member", shorts))
+
+
+def _has_unique_member_ids(da: xr.DataArray) -> bool:
+    if "member" not in da.dims:
+        return True
+    ids = [member_short_id(v) for v in da["member"].values]
+    return len(ids) == len(set(ids))
 
 
 def _one_dim_date(ds_or_da) -> np.ndarray:
@@ -586,11 +622,18 @@ def compute_ep100(case: str, wave: str, window, plev_hpa: float = 100, lat_range
 
 
 def compute_all_ep100(case: str, window) -> pd.DataFrame:
+    columns = ["member"] + [f"EP100_{wave}" for wave in WAVES] + ["EP100_wave1_plus_wave2"]
     frames = [compute_ep100(case, wave, window) for wave in WAVES]
     frames = [f for f in frames if not f.empty]
     if not frames:
-        return pd.DataFrame()
-    wide = pd.concat(frames, ignore_index=True).pivot(index="member", columns="wave", values="EP100").reset_index()
+        return pd.DataFrame(columns=columns)
+    long = pd.concat(frames, ignore_index=True)
+    if long.duplicated(["member", "wave"]).any():
+        log_message(
+            f"{case}: duplicate EP100 member-wave rows detected; averaging duplicates before reshape."
+        )
+        long = long.groupby(["member", "wave"], as_index=False)["EP100"].mean()
+    wide = long.pivot(index="member", columns="wave", values="EP100").reset_index()
     for wave in WAVES:
         if wave not in wide:
             wide[wave] = np.nan
@@ -667,8 +710,11 @@ def compute_u60(case: str, plev_hpa: float):
     cache = CACHE_DIR / f"{case}_U60N{int(plev_hpa)}.nc"
     if cache.exists():
         da = xr.open_dataarray(cache).load()
-        date = np.asarray(da["date"].values, dtype=np.int64) if "date" in da.coords else np.arange(da.sizes["lead_time"])
-        return da, date
+        if _has_unique_member_ids(da):
+            date = np.asarray(da["date"].values, dtype=np.int64) if "date" in da.coords else np.arange(da.sizes["lead_time"])
+            return da, date
+        log_message(f"{case}: rebuilding stale U60N{plev_hpa} cache with duplicate member ids.")
+        da.close()
     files = sorted((HINDCAST_ROOT / case / "U").glob("*.U.nc"))
     if not files:
         log_message(f"{case}: missing U files for U60N{plev_hpa}")
@@ -817,7 +863,11 @@ def load_or_build_z300(case: str, window):
     """
     cache = CACHE_DIR / f"{case}_Z300_{_window_token(window)}.nc"
     if cache.exists():
-        return xr.open_dataarray(cache).load()
+        da = xr.open_dataarray(cache).load()
+        if _has_unique_member_ids(da):
+            return da
+        log_message(f"{case}: rebuilding stale Z300 cache with duplicate member ids.")
+        da.close()
     files = sorted((HINDCAST_ROOT / case / "Z3").glob("*.Z3.nc"))
     if not files:
         log_message(f"{case}: missing Z3 files")
