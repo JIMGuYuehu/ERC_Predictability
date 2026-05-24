@@ -650,13 +650,29 @@ def compute_o3_rmse(hind_o3, ref_o3, start, end) -> pd.DataFrame:
     ref_date = np.asarray(ref_o3["date"].values if "date" in ref_o3.coords else np.arange(ref_o3.sizes["lead_time"]))
     mh = date_mask_from_mmdd_or_leadday(hind_date, start, end)
     mr = date_mask_from_mmdd_or_leadday(ref_date, start, end)
-    h = hind_o3.isel(lead_time=mh)
-    r = ref_o3.isel(lead_time=mr)
+    if isinstance(start, (tuple, list)) and isinstance(end, (tuple, list)) and _valid_calendar_or_mmdd(hind_date) and _valid_calendar_or_mmdd(ref_date):
+        hind_doy = date_to_doy(hind_date[mh])
+        ref_doy = date_to_doy(ref_date[mr])
+        common_doy = np.intersect1d(hind_doy, ref_doy)
+        if len(common_doy):
+            hind_index = np.where(mh)[0][np.isin(hind_doy, common_doy)]
+            ref_index = np.where(mr)[0][np.isin(ref_doy, common_doy)]
+            h = hind_o3.isel(lead_time=hind_index)
+            r = ref_o3.isel(lead_time=ref_index)
+        else:
+            h = hind_o3.isel(lead_time=mh)
+            r = ref_o3.isel(lead_time=mr)
+    else:
+        h = hind_o3.isel(lead_time=mh)
+        r = ref_o3.isel(lead_time=mr)
     n = min(h.sizes.get("lead_time", 0), r.sizes.get("lead_time", 0))
     if n == 0:
         return pd.DataFrame(columns=["member", "O3_RMSE", "n_days"])
-    h = h.isel(lead_time=slice(0, n))
-    r = r.isel(lead_time=slice(0, n))
+    # Reset positional coordinates after selecting matching calendar days.
+    # Otherwise xarray aligns an Apr-initialized hindcast lead_time 0..N with
+    # reference lead_time 90..N and silently produces an empty comparison.
+    h = h.isel(lead_time=slice(0, n)).assign_coords(lead_time=np.arange(n))
+    r = r.isel(lead_time=slice(0, n)).assign_coords(lead_time=np.arange(n))
     rmse = np.sqrt(((h - r) ** 2).mean("lead_time", skipna=True))
     members = [str(v) for v in rmse["member_short"].values] if "member_short" in rmse.coords else [member_short_id(v) for v in rmse["member"].values]
     return pd.DataFrame({"member": members, "O3_RMSE": rmse.values.astype(float), "n_days": n})
