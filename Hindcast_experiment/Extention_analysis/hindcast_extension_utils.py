@@ -922,8 +922,9 @@ def compute_fwd_from_u60n50(u60n50) -> pd.DataFrame:
 
     Definition
     ----------
-    First day when U60N50 < 7 m/s and remains below that threshold for at least
-    10 consecutive days.
+    First available Jan-Jun day below the pressure-dependent threshold with no
+    later 10-day westerly return. This mirrors
+    ``date_treatment/scripts/compute_hindcast_fwd.py``.
 
     Returns
     -------
@@ -934,13 +935,26 @@ def compute_fwd_from_u60n50(u60n50) -> pd.DataFrame:
         return pd.DataFrame(columns=["member", "FWD_DOY"])
     dates = np.asarray(u60n50["date"].values if "date" in u60n50.coords else np.arange(u60n50.sizes["lead_time"]))
     doys = date_to_doy(dates) if dates.max() > 1000 else np.arange(len(dates)) + 1
+    plev_hpa = float(u60n50.attrs.get("plev_hpa", 50.0))
+    threshold = 0.0 if plev_hpa <= 10.0 else U60_THRESH
     rows = []
     for i, mid in enumerate(u60n50["member"].values):
         vals = np.asarray(u60n50.isel(member=i).values, dtype=float)
         fwd = np.nan
-        below = vals < U60_THRESH
-        for t in range(0, max(0, len(vals) - FWD_PERSIST_DAYS + 1)):
-            if below[t] and below[t:t + FWD_PERSIST_DAYS].all():
+        for t, val in enumerate(vals):
+            if not (np.isfinite(val) and val < threshold):
+                continue
+            run = 0
+            later_return = False
+            for later in vals[t + 1:]:
+                if np.isfinite(later) and later >= threshold:
+                    run += 1
+                    if run >= FWD_PERSIST_DAYS:
+                        later_return = True
+                        break
+                else:
+                    run = 0
+            if not later_return:
                 fwd = float(doys[t])
                 break
         rows.append({"member": member_short_id(mid), "FWD_DOY": fwd})
@@ -955,15 +969,20 @@ def load_fwd_product(case: str) -> pd.DataFrame:
         return pd.DataFrame(columns=["member", "plev_hpa", "FWD_DOY"])
     try:
         with xr.open_dataset(path, decode_times=False) as ds:
-            var = list(ds.data_vars)[0]
+            var = "FWD_dayofyear" if "FWD_dayofyear" in ds.data_vars else list(ds.data_vars)[0]
             da = _assign_member_short(ds[var]).load()
+            plev_hpa_coord = ds["plev_hpa"].load() if "plev_hpa" in ds.coords else None
         # The exact variable name differs across experiments; keep a long table.
         plev_name = "plev" if "plev" in da.dims else ("pressure" if "pressure" in da.dims else None)
         rows = []
         if plev_name is not None and "member" in da.dims:
-            for lev in da[plev_name].values:
+            for il, lev in enumerate(da[plev_name].values):
+                if plev_hpa_coord is not None:
+                    plev_hpa = float(plev_hpa_coord.isel({plev_name: il}).values)
+                else:
+                    plev_hpa = float(lev) / 100.0 if float(lev) > 2000 else float(lev)
                 for mi, mid in enumerate(da["member"].values):
-                    rows.append({"member": member_short_id(mid), "plev_hpa": float(lev) / 100.0 if float(lev) > 2000 else float(lev), "FWD_DOY": float(da.sel({plev_name: lev}).isel(member=mi))})
+                    rows.append({"member": member_short_id(mid), "plev_hpa": plev_hpa, "FWD_DOY": float(da.sel({plev_name: lev}).isel(member=mi))})
         return pd.DataFrame(rows)
     except Exception as exc:
         log_message(f"{case}: failed FWD load: {exc}")
