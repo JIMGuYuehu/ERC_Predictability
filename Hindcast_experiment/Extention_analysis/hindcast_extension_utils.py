@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
+from matplotlib.ticker import FixedLocator
 from matplotlib.ticker import ScalarFormatter
 from scipy.stats import pearsonr
 
@@ -58,6 +59,8 @@ MONTH_WINDOWS = {
     "Apr": ((4, 1), (4, 30)),
     "May": ((5, 1), (5, 30)),
 }
+MONTH_TICK_DOYS = [1, 32, 60, 91, 121, 152]
+MONTH_TICK_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
 
 plt.rcParams.update({
     "figure.facecolor": "white",
@@ -282,6 +285,27 @@ def savefig(
     return png, pdf
 
 
+def figure_dir(*parts: str) -> Path:
+    """Return and create a grouped figure directory below outputs/figures."""
+    path = FIG_DIR.joinpath(*[str(p) for p in parts if str(p)])
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def table_dir(*parts: str) -> Path:
+    """Return and create a grouped table directory below outputs/tables."""
+    path = TAB_DIR.joinpath(*[str(p) for p in parts if str(p)])
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def cache_dir(*parts: str) -> Path:
+    """Return and create a grouped cache directory below outputs/cache."""
+    path = CACHE_DIR.joinpath(*[str(p) for p in parts if str(p)])
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def finite_corr(x, y) -> dict:
     """Compute Pearson correlation for finite paired values.
 
@@ -342,6 +366,19 @@ def date_parts(date_values):
     return year, month, day
 
 
+def _valid_calendar_or_mmdd(values) -> bool:
+    raw = np.asarray(values, dtype=np.int64)
+    if raw.size == 0:
+        return False
+    _, month, day = date_parts(raw)
+    calendar = raw.max() >= 10000
+    mmdd_only = raw.max() < 10000 and raw.min() >= 101
+    return bool(
+        (calendar or mmdd_only)
+        and np.all((month >= 1) & (month <= 12) & (day >= 1) & (day <= 31))
+    )
+
+
 def mmdd_to_doy(month: int, day: int) -> int:
     return int(MONTH_START_DOY[int(month) - 1] + int(day))
 
@@ -363,6 +400,63 @@ def date_to_doy(date_values) -> np.ndarray:
     month = np.asarray(month, dtype=int)
     day = np.asarray(day, dtype=int)
     return MONTH_START_DOY[month - 1] + day
+
+
+def init_doy_for_case(case: str) -> int:
+    """Return 1-based day-of-year for the first day of the case init month."""
+    meta = parse_case_name(case)
+    month = int(meta.get("init_month") or 1)
+    return mmdd_to_doy(month, 1)
+
+
+def case_time_doy(case: str, time_values) -> np.ndarray:
+    """Convert real dates or 0-based lead days to a case-aware day-of-year axis."""
+    if isinstance(time_values, xr.DataArray):
+        values = time_values.values
+    else:
+        values = np.asarray(time_values)
+    if np.issubdtype(np.asarray(values).dtype, np.datetime64):
+        dates = pd.to_datetime(values)
+        values = dates.year * 10000 + dates.month * 100 + dates.day
+    raw = np.asarray(values, dtype=np.int64)
+    if _valid_calendar_or_mmdd(raw):
+        return date_to_doy(raw)
+    return init_doy_for_case(case) + np.arange(len(raw), dtype=int)
+
+
+def date_mask_for_case_window(case: str, time, start, end) -> np.ndarray:
+    """Build a case-aware mask from MM-DD calendar bounds or lead-day bounds.
+
+    Calendar bounds still work for derived files whose time coordinate is only
+    0-based lead day; lead day 0 is anchored to the case initialization month.
+    """
+    if isinstance(time, xr.DataArray):
+        values = time.values
+    else:
+        values = np.asarray(time)
+    if isinstance(start, (tuple, list)) and isinstance(end, (tuple, list)):
+        doy = case_time_doy(case, values)
+        return (doy >= mmdd_to_doy(*start)) & (doy <= mmdd_to_doy(*end))
+    lead = np.arange(len(values))
+    return (lead >= int(start)) & (lead <= int(end))
+
+
+def set_month_axis(ax, start_doy: int = 1, end_doy: int = 151, label: str = "Month"):
+    """Style a day-of-year x-axis with month labels."""
+    ticks = [d for d in MONTH_TICK_DOYS if start_doy <= d <= end_doy + 15]
+    labels = [MONTH_TICK_LABELS[MONTH_TICK_DOYS.index(d)] for d in ticks]
+    ax.set_xlim(start_doy, end_doy)
+    ax.xaxis.set_major_locator(FixedLocator(ticks))
+    ax.set_xticklabels(labels)
+    ax.set_xlabel(label)
+
+
+def case_month_window_available(case: str, month_label: str) -> bool:
+    """Return True if the case starts no later than the requested month."""
+    meta = parse_case_name(case)
+    init_month = int(meta.get("init_month") or 1)
+    month_index = MONTH_ABBR.index(month_label) + 1
+    return init_month <= month_index
 
 
 def date_mask_from_mmdd_or_leadday(time, start, end):
@@ -611,7 +705,7 @@ def compute_ep100(case: str, wave: str, window, plev_hpa: float = 100, lat_range
     ep2, date = load_epflux(case, wave)
     if ep2 is None:
         return pd.DataFrame(columns=["member", "wave", "EP100"])
-    mask = date_mask_from_mmdd_or_leadday(date, window[0], window[1])
+    mask = date_mask_for_case_window(case, date, window[0], window[1])
     if mask.sum() == 0:
         log_message(f"{case}: EP100 {wave} empty window {window}")
         return pd.DataFrame(columns=["member", "wave", "EP100"])
@@ -659,7 +753,7 @@ def compute_ep_vertical_profile(
     ep2, date = load_epflux(case, wave)
     if ep2 is None:
         return pd.DataFrame(columns=["member", "wave", "plev_hpa", "EPFz"])
-    mask = date_mask_from_mmdd_or_leadday(date, window[0], window[1])
+    mask = date_mask_for_case_window(case, date, window[0], window[1])
     rows = []
     for lev in levels_hpa:
         da = -ep2.sel(plev=float(lev) * 100.0, method="nearest")
@@ -745,6 +839,66 @@ def compute_u60(case: str, plev_hpa: float):
     da.attrs.update({"units": "m s-1", "plev_hpa": float(plev_hpa), "lat": 60.0})
     da.to_netcdf(cache)
     return da, np.asarray(da["date"].values, dtype=np.int64)
+
+
+def load_bwcn_reference_u60(year: str | int, plev_hpa: float):
+    """Load or compute BWCN same-year U60N at one pressure level."""
+    year_i = int(year)
+    cache = CACHE_DIR / f"BWCN_{year_i:04d}_U60N{int(plev_hpa)}.nc"
+    if cache.exists():
+        da = xr.open_dataarray(cache).load()
+        date = np.asarray(da["date"].values, dtype=np.int64) if "date" in da.coords else np.arange(da.sizes["lead_time"])
+        return da, date
+    path = BWCN_ROOT / "U" / f"BWCN.cam.h3.{year_i:04d}.U.nc"
+    if not path.exists():
+        log_message(f"BWCN year {year_i:04d}: missing U file {path}")
+        return None, None
+    try:
+        with xr.open_dataset(path, decode_times=False) as ds:
+            date = np.asarray(ds["date"].values, dtype=np.int64)
+            sub = ds.sel(lat=60.0, method="nearest")
+            p_mid = sub["hyam"] * sub["P0"] + sub["hybm"] * sub["PS"]
+            u = _interp_profile_logp(
+                sub["U"].transpose("time", "lon", "lev"),
+                p_mid.transpose("time", "lon", "lev"),
+                float(plev_hpa) * 100.0,
+            ).mean("lon", skipna=True).load()
+        da = u.rename({"time": "lead_time"}).assign_coords(date=("lead_time", date))
+        da.name = f"BWCN_U60N{int(plev_hpa)}"
+        da.attrs.update({"units": "m s-1", "plev_hpa": float(plev_hpa), "lat": 60.0})
+        da.astype(np.float32).to_netcdf(cache)
+        return da, date
+    except Exception as exc:
+        log_message(f"BWCN year {year_i:04d}: failed U60N{plev_hpa}: {exc}")
+        return None, None
+
+
+def load_b2000_u60_climatology(plev_hpa: float):
+    """Load B2000 all-year climatological zonal-mean U at 60N."""
+    cache = CACHE_DIR / f"B2000_U60N{int(plev_hpa)}_climatology_doy.nc"
+    if cache.exists():
+        return xr.open_dataarray(cache).load()
+    path = B2000_ROOT / "climatology" / "U_climatology_plev_doy.nc"
+    if not path.exists():
+        log_message(f"missing B2000 U climatology {path}")
+        return None
+    try:
+        with xr.open_dataset(path, decode_times=False) as ds:
+            da = (
+                ds["U_clim_all"]
+                .sel(plev=float(plev_hpa) * 100.0, method="nearest")
+                .sel(lat=60.0, method="nearest")
+                .mean("lon", skipna=True)
+                .load()
+            )
+        da = da.assign_coords(doy=np.asarray(da["doy"].values, dtype=int))
+        da.name = f"B2000_U60N{int(plev_hpa)}_climatology"
+        da.attrs.update({"units": "m s-1", "plev_hpa": float(plev_hpa), "lat": 60.0})
+        da.astype(np.float32).to_netcdf(cache)
+        return da
+    except Exception as exc:
+        log_message(f"failed B2000 U60N{plev_hpa} climatology: {exc}")
+        return None
 
 
 def compute_fwd_from_u60n50(u60n50) -> pd.DataFrame:
@@ -837,6 +991,7 @@ def compute_spread_onset(da_member_time) -> dict:
     doys = date_to_doy(dates) if dates.max() > 1000 else np.arange(len(vals)) + 1
     return {
         "onset_index": onset,
+        "onset_lead_day": onset,
         "onset_doy": float(doys[int(onset)]) if np.isfinite(onset) else np.nan,
         "threshold": float(thresh),
         "spread": vals,
@@ -877,7 +1032,7 @@ def load_or_build_z300(case: str, window):
         try:
             with xr.open_dataset(f, decode_times=False) as ds:
                 date = np.asarray(ds["date"].values, dtype=np.int64)
-                mask = date_mask_from_mmdd_or_leadday(date, window[0], window[1])
+                mask = date_mask_for_case_window(case, date, window[0], window[1])
                 sub = ds.isel(time=mask).sel(lat=slice(LAT_Z300[0], LAT_Z300[1]))
                 p_mid = sub["hyam"] * sub["P0"] + sub["hybm"] * sub["PS"]
                 z = _interp_profile_logp(
@@ -897,6 +1052,39 @@ def load_or_build_z300(case: str, window):
     da.attrs.update({"units": "m", "plev_hpa": PLEV_Z300_HPA, "window": str(window)})
     da.to_netcdf(cache)
     return da
+
+
+def load_or_build_bwcn_z300(year: str | int, window):
+    """Load or compute BWCN same-year 300 hPa height for one window."""
+    year_i = int(year)
+    cache = CACHE_DIR / f"BWCN_{year_i:04d}_Z300_{_window_token(window)}.nc"
+    if cache.exists():
+        return xr.open_dataarray(cache).load()
+    path = BWCN_ROOT / "Z3" / f"BWCN.cam.h3.{year_i:04d}.Z3.nc"
+    if not path.exists():
+        log_message(f"BWCN year {year_i:04d}: missing Z3 file {path}")
+        return None
+    try:
+        with xr.open_dataset(path, decode_times=False) as ds:
+            date = np.asarray(ds["date"].values, dtype=np.int64)
+            mask = date_mask_for_case_window(f"{year_i:04d}-01", date, window[0], window[1])
+            if mask.sum() == 0:
+                log_message(f"BWCN year {year_i:04d}: empty Z300 window {window}")
+                return None
+            sub = ds.isel(time=mask).sel(lat=slice(LAT_Z300[0], LAT_Z300[1]))
+            p_mid = sub["hyam"] * sub["P0"] + sub["hybm"] * sub["PS"]
+            z = _interp_profile_logp(
+                sub["Z3"].transpose("time", "lat", "lon", "lev"),
+                p_mid.transpose("time", "lat", "lon", "lev"),
+                PLEV_Z300_HPA * 100.0,
+            ).mean("time", skipna=True).load()
+        z.name = "BWCN_Z300"
+        z.attrs.update({"units": "m", "plev_hpa": PLEV_Z300_HPA, "window": str(window)})
+        z.astype(np.float32).to_netcdf(cache)
+        return z
+    except Exception as exc:
+        log_message(f"BWCN year {year_i:04d}: failed Z300 {window}: {exc}")
+        return None
 
 
 def compute_z300_stationary_anomaly(z300):
@@ -958,6 +1146,68 @@ def compute_z300_climatological_stationary_target(month_or_window):
     except Exception as exc:
         log_message(f"failed B2000 Z300 target {month_or_window}: {exc}")
         return None
+
+
+def load_b2000_o3_partial_climatology():
+    """Load B2000 all-year O3 partial-column climatology by day of year."""
+    cache = CACHE_DIR / "B2000_O3_partial_60_90N_30_70hPa_climatology_doy.nc"
+    if cache.exists():
+        return xr.open_dataarray(cache).load()
+    path = B2000_ROOT / "partial_O3" / "B2000WCN_partial_O3_all_ranges.nc"
+    if not path.exists():
+        log_message(f"missing B2000 partial O3 climatology source {path}")
+        return None
+    try:
+        with xr.open_dataset(path, decode_times=False) as ds:
+            da = ds[O3_VAR]
+            date = np.asarray(ds["date"].values, dtype=np.int64)
+            doy = date_to_doy(date)
+            da = da.assign_coords(doy=("time", doy)).groupby("doy").mean("time", skipna=True).load()
+        da.name = "B2000_O3_partial_60_90N_30_70hPa_climatology"
+        da.attrs.update({"units": "DU"})
+        da.astype(np.float32).to_netcdf(cache)
+        return da
+    except Exception as exc:
+        log_message(f"failed B2000 partial O3 climatology: {exc}")
+        return None
+
+
+def load_bwcn_ep100_reference(year: str | int, wave: str, window, plev_hpa: float = 100, lat_range: tuple = LAT_EP) -> float:
+    """Compute BWCN same-year EP100 reference from the long BWCN EP-flux file.
+
+    The available BWCN reference product is omega-corrected
+    ``EPflux_daily_ubar_wcorr``. Current hindcast EP100 uses
+    ``EPflux_daily_ubar`` for no-omega-consistent ensemble comparison, so this
+    reference anomaly should be interpreted as an approximate pathway error.
+    """
+    path = BWCN_ROOT / "EPflux_daily_ubar_wcorr" / wave / f"EPFLUX_{wave}_24yr_time_plev_lat.nc"
+    if not path.exists():
+        log_message(f"BWCN EP100 reference missing {path}")
+        return np.nan
+    year_i = int(year)
+    try:
+        with xr.open_dataset(path, decode_times=False) as ds:
+            time = np.asarray(ds["time"].values, dtype=float)
+            ref_year = (np.floor(time).astype(int) // 365) + 1
+            ref_doy = (np.floor(time).astype(int) % 365) + 1
+            if isinstance(window[0], (tuple, list)):
+                mask = (
+                    (ref_year == year_i)
+                    & (ref_doy >= mmdd_to_doy(*window[0]))
+                    & (ref_doy <= mmdd_to_doy(*window[1]))
+                )
+            else:
+                start = init_doy_for_case(f"{year_i:04d}-01") + int(window[0])
+                end = init_doy_for_case(f"{year_i:04d}-01") + int(window[1])
+                mask = (ref_year == year_i) & (ref_doy >= start) & (ref_doy <= end)
+            if mask.sum() == 0:
+                return np.nan
+            da = -ds["ep2"].sel(plev=float(plev_hpa) * 100.0, method="nearest").isel(time=mask)
+            val = coslat_weighted_mean(da, lat_range).mean("time", skipna=True).load()
+        return float(val.values)
+    except Exception as exc:
+        log_message(f"BWCN year {year_i:04d}: failed EP100 reference {wave} {window}: {exc}")
+        return np.nan
 
 
 def weighted_pattern_corr(a, b) -> float:
@@ -1108,7 +1358,7 @@ def case_source_table(case: str, source_key: str = "primary") -> pd.DataFrame:
     for plev in [10, 50]:
         u, udate = compute_u60(case, plev)
         if u is not None:
-            mask = date_mask_from_mmdd_or_leadday(udate, target[0], target[1])
+            mask = date_mask_for_case_window(case, udate, target[0], target[1])
             metric = u.isel(lead_time=mask).mean("lead_time", skipna=True)
             udf = pd.DataFrame({"member": [member_short_id(v) for v in metric["member"].values], f"U60N{plev}_mean": metric.values.astype(float)})
             out = out.merge(udf, on="member", how="outer")
