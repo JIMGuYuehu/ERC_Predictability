@@ -34,6 +34,7 @@ def ensure_dirs() -> None:
 
 def save_figure(fig: plt.Figure, stem: str) -> None:
     fig.savefig(PLOT_DIR / f"{stem}.png", dpi=180, bbox_inches="tight")
+    fig.savefig(PLOT_DIR / f"{stem}.pdf", bbox_inches="tight")
     fig.savefig(PLOT_DIR / f"{stem}.svg", bbox_inches="tight")
     plt.close(fig)
 

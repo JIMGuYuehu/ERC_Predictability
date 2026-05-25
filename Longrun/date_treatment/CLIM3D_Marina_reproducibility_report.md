@@ -71,12 +71,12 @@ The comparison steps were:
 3. Rank the mapped pairs by that feature for Marina O3 and for our partial O3.
 4. Select LOW25 with `floor(0.25 * N)`.
 
-There are `198` mapped pairs with valid rm5 O3 values on both sides, so LOW25
-contains `floor(0.25 * 198) = 49` pairs. Of these 49 LOW25 pairs, Marina and our
-partial O3 select the same `42` pairs and disagree on `7`.
+There are `200` mapped pairs with valid feature-matched rm5 O3 values on both
+sides, so LOW25 contains `floor(0.25 * 200) = 50` pairs. Of these 50 LOW25
+pairs, Marina and our partial O3 select the same `46` pairs and disagree on `4`.
 
-This is why I described the mismatch as "about 7 years, close to ten years" in
-the LOW25 subset. It is a subset-overlap statement, not a total-year statement.
+This is why I describe the remaining mismatch as a boundary-year issue in the
+LOW25 subset. It is a subset-overlap statement, not a total-year statement.
 
 ## Chunk Mapping
 
@@ -143,8 +143,8 @@ FWD_50hPa(year) = final warming day of year at nearest 50 hPa
    and maximum absolute difference `4 d`; `198/200` pairs differ by exactly
    `+1 d`, which is a day-index convention difference.
 7. Checked mapped-pair rm5 O3 ranking feature:
-   correlation `0.9586`, mean absolute difference `20.05 DU`, LOW25 overlap
-   `42/49`.
+   after the corrected feature-matched year mapping, correlation is `0.9941`,
+   mean absolute difference is `19.98 DU`, and LOW25 overlap is `46/50`.
 
 ## Why The Reproduction Differs With Our Cleaned Data
 
@@ -199,6 +199,7 @@ Reproducible script:
 
 - `Longrun/date_treatment/fwd_clim3d_low25_source_test.py`
 - `Longrun/date_treatment/fwd_clim3d_marina_report_figures.py`
+- `Longrun/date_treatment/build_test_fwd_plots.py`
 
 Tables:
 
@@ -206,6 +207,9 @@ Tables:
 - `Longrun/date_treatment/clim3d_marina_repro_report/mapped_pair_diagnostics.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/chunk_mapping_pairs.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/mapped_pair_fwd50_feature_matched_details.csv`
+- `Longrun/date_treatment/clim3d_marina_repro_report/mapped_pair_rm5_feature_matched_details.csv`
+- `Longrun/date_treatment/clim3d_marina_repro_report/feature_matched_fwd_by_level_summary.csv`
+- `Longrun/date_treatment/clim3d_marina_repro_report/figure2_rm5_o3_local_vs_marina_clim3d_profiles.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/mapped_pair_rm5_details.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/marina_saved_fwd_profiles_rm5.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/key_numbers.csv`
@@ -216,12 +220,26 @@ Figures:
 - `Longrun/Visualization/plots/clim3d_marina_repro/clim3d_mapped_o3_min_rm5_scatter.png`
 - `Longrun/Visualization/plots/clim3d_marina_repro/clim3d_mapped_fwd50_scatter.png`
 - `Longrun/Visualization/plots/clim3d_marina_repro/clim3d_marina_saved_fwd_profiles_rm5.png`
+- `Longrun/Visualization/plots/TEST_FWD_plots/clim3d_low25_50hpa_mean_variants.png`
+- `Longrun/Visualization/plots/TEST_FWD_plots/clim3d_mapped_fwd50_scatter.png`
+- `Longrun/Visualization/plots/TEST_FWD_plots/clim3d_mapped_o3_min_rm5_scatter.png`
+- `Longrun/Visualization/plots/TEST_FWD_plots/clim3d_feature_matched_fwd_by_level_scatter.png`
+- `Longrun/Visualization/plots/TEST_FWD_plots/clim3d_feature_matched_fwd_by_level_error_profile.png`
+- `Longrun/Visualization/plots/TEST_FWD_plots/figure2_fwd_response_rm5_o3_4panel.png`
+- `Longrun/Visualization/plots/TEST_FWD_plots/figure2_fwd_response_rm5_o3_4panel_marina_clim3d.png`
 
 To regenerate:
 
 ```bash
 cd /home/weiji/restart_exam/code_cleaned
 /home/weiji/miniconda3/envs/jimnew/bin/python Longrun/date_treatment/fwd_clim3d_marina_report_figures.py
+```
+
+To regenerate the compact TEST_FWD plot bundle:
+
+```bash
+cd /home/weiji/restart_exam/code_cleaned
+/home/weiji/miniconda3/envs/jimnew/bin/python Longrun/date_treatment/build_test_fwd_plots.py
 ```
 
 ## Recommendation For Reporting
