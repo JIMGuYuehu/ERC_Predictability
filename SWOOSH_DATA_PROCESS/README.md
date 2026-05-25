@@ -26,6 +26,7 @@ Run with the repository Conda environment:
 /home/weiji/miniconda3/envs/jimnew/bin/python SWOOSH_DATA_PROCESS/fill_swoosh_target.py
 /home/weiji/miniconda3/envs/jimnew/bin/python SWOOSH_DATA_PROCESS/plot_swoosh_fill_diagnostics.py
 /home/weiji/miniconda3/envs/jimnew/bin/python SWOOSH_DATA_PROCESS/why_size_dif.py
+/home/weiji/miniconda3/envs/jimnew/bin/python SWOOSH_DATA_PROCESS/process_swoosh_years.py --years 2011 2018 2023
 ```
 
 The filled NetCDF is written to:
@@ -45,6 +46,11 @@ The NetCDF4 classic copy for ECMWF/IFS testing is written to:
 ```text
 /mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201912-202101_filled_no_missing_netcdf4_classic.nc
 ```
+
+Additional target-year files can be generated with `process_swoosh_years.py`.
+For target year `YYYY`, the script writes one 14-month file for `YYYY-1` December
+through `YYYY+1` January, using the same remapping, missing-value filling,
+compression, and optional NetCDF4 classic-copy workflow as the 2020 file.
 
 The final filled NetCDF listed above is kept with the workflow. Other temporary
 NetCDF outputs in `outputs/` remain ignored by Git. Small run reports are written
