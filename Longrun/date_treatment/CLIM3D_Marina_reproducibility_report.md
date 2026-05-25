@@ -34,6 +34,17 @@ replace Marina's native products for this Table 1 reproduction:
 
 ![Marina native saved FWD profiles selected by Marina rm5 O3](../Visualization/plots/clim3d_marina_repro/clim3d_marina_saved_fwd_profiles_rm5.png)
 
+Note on the mapped 50 hPa FWD comparison: an earlier version of
+`clim3d_mapped_fwd50_scatter.png` used a hand-written chunk mapping that
+duplicated Marina years `50-58`. That obsolete mapping produced artificial
+outliers, including one apparent `32 d` offset. The regenerated figure now uses
+the independent field-fingerprint mapping from `TEST_FWD.ipynb` /
+`fwd_clim3d_feature_mapping_test.py`; under that mapping, the 50 hPa FWD
+comparison has `n=200`, mean absolute difference `1.01 d`, and maximum absolute
+difference `4 d`. Most mapped pairs differ by exactly `+1 d`, consistent with
+Marina's saved array storing a January-to-June day index while our generated
+NetCDF stores day-of-year.
+
 The Marina profile figure is the direct "use her data" check. At 50 hPa it gives:
 
 | Group | 50 hPa mean FWD |
@@ -75,20 +86,20 @@ year-number equality, but a chunk-aware mapping:
 
 | Our CLIM-3D nominal years | Marina year positions | Number of pairs |
 | ---: | ---: | ---: |
-| `11-62` | `7-58` | 52 |
-| `63-110` | `102-149` | 48 |
-| `111-162` | `50-101` | 52 |
+| `5-56` | `1-52` | 52 |
+| `114-161` | `53-100` | 48 |
+| `62-113` | `101-152` | 52 |
 | `163-210` | `153-200` | 48 |
 
 This mapping creates pair IDs `1-200`. Each pair is used as the comparison unit:
 the Marina-side O3/FWD comes from the Marina year position, and the local-side
 O3/FWD comes from the mapped local nominal year.
 
-Important caveat: this is a deterministic best-match mapping based on the
-merged file structure and earlier segment matching. It is not a proof that every
-mapped pair is bitwise the same original model year. The high FWD correlation
-shows the mapping is dynamically very close, but the O3 ranking still changes at
-the LOW25 boundary.
+Important caveat: this is a deterministic best-match mapping based on field
+fingerprints and Marina's merge-history chunks. It is not a proof that every
+mapped pair is bitwise the same original model year. The corrected 50 hPa FWD
+comparison is dynamically very close, but the O3 ranking still changes at the
+LOW25 boundary because the O3 diagnostics differ.
 
 ## Annual Feature Used For LOW25
 
@@ -126,8 +137,11 @@ FWD_50hPa(year) = final warming day of year at nearest 50 hPa
 5. Cross-combined sources:
    Marina FWD + our O3 selection, and our FWD + Marina O3 selection.
 6. Checked mapped-pair FWD:
-   our 50 hPa FWD vs Marina saved 50 hPa FWD has correlation `0.983` and mean
-   absolute difference `1.43 d`.
+   the first hand-written chunk mapping created false outliers because Marina
+   years `50-58` were duplicated. The corrected feature-matched mapping gives
+   our 50 hPa FWD vs Marina saved 50 hPa FWD mean absolute difference `1.01 d`
+   and maximum absolute difference `4 d`; `198/200` pairs differ by exactly
+   `+1 d`, which is a day-index convention difference.
 7. Checked mapped-pair rm5 O3 ranking feature:
    correlation `0.9586`, mean absolute difference `20.05 DU`, LOW25 overlap
    `42/49`.
@@ -191,6 +205,7 @@ Tables:
 - `Longrun/date_treatment/clim3d_marina_repro_report/source_isolation_summary.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/mapped_pair_diagnostics.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/chunk_mapping_pairs.csv`
+- `Longrun/date_treatment/clim3d_marina_repro_report/mapped_pair_fwd50_feature_matched_details.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/mapped_pair_rm5_details.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/marina_saved_fwd_profiles_rm5.csv`
 - `Longrun/date_treatment/clim3d_marina_repro_report/key_numbers.csv`

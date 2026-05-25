@@ -62,9 +62,12 @@ MONTH_NAMES = np.array(
 )
 
 CLIM3D_CHUNKS = [
-    {"our_start": 11, "our_end": 62, "marina_start": 7, "marina_end": 58},
-    {"our_start": 63, "our_end": 110, "marina_start": 102, "marina_end": 149},
-    {"our_start": 111, "our_end": 162, "marina_start": 50, "marina_end": 101},
+    # Fingerprint-matched chunk order from fwd_clim3d_feature_mapping_test.py.
+    # The older hand mapping duplicated Marina years 50-58 and produced
+    # artificial 50 hPa FWD outliers in the source-isolation scatter.
+    {"our_start": 5, "our_end": 56, "marina_start": 1, "marina_end": 52},
+    {"our_start": 114, "our_end": 161, "marina_start": 53, "marina_end": 100},
+    {"our_start": 62, "our_end": 113, "marina_start": 101, "marina_end": 152},
     {"our_start": 163, "our_end": 210, "marina_start": 153, "marina_end": 200},
 ]
 

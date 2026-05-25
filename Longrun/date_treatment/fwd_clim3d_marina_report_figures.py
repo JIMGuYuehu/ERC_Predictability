@@ -22,6 +22,9 @@ import fwd_clim3d_low25_source_test as src
 ROOT = Path("/home/weiji/restart_exam/code_cleaned")
 PLOT_DIR = ROOT / "Longrun/Visualization/plots/clim3d_marina_repro"
 TABLE_DIR = ROOT / "Longrun/date_treatment/clim3d_marina_repro_report"
+FEATURE_MATCHED_FWD50_CSV = (
+    ROOT / "Longrun/date_treatment/clim3d_feature_mapping_test/feature_matched_fwd50_by_pair.csv"
+)
 
 
 def ensure_dirs() -> None:
@@ -104,6 +107,50 @@ def build_rm5_pair_table(
     paired["is_marina_rm5_low25"] = paired["pair_id"].isin(marina_low)
     paired["valid_for_rm5_o3_low25"] = paired["pair_id"].isin(set(valid_o3["pair_id"].astype(int)))
     return paired
+
+
+def load_feature_matched_fwd_pair_table() -> pd.DataFrame:
+    """Load the independently fingerprint-matched CLIM-3D FWD pair table.
+
+    The rm5 O3 source-isolation table is still built from the active mapping in
+    fwd_clim3d_low25_source_test.py.  The 50 hPa FWD scatter is stricter: it
+    should use the mapping inferred directly from field fingerprints in
+    fwd_clim3d_feature_mapping_test.py, because an older hand-written chunk map
+    duplicated Marina years 50-58 and created artificial FWD outliers.
+    """
+    if not FEATURE_MATCHED_FWD50_CSV.exists():
+        raise FileNotFoundError(
+            f"Missing feature-matched FWD table: {FEATURE_MATCHED_FWD50_CSV}. "
+            "Run Longrun/date_treatment/fwd_clim3d_feature_mapping_test.py first."
+        )
+    df = pd.read_csv(FEATURE_MATCHED_FWD50_CSV)
+    required = {
+        "pair_id",
+        "our_year",
+        "marina_year",
+        "our_fwd_50hpa_doy",
+        "marina_fwd_50hpa_doy",
+    }
+    missing = required.difference(df.columns)
+    if missing:
+        raise ValueError(f"{FEATURE_MATCHED_FWD50_CSV} is missing columns: {sorted(missing)}")
+    out = df[
+        [
+            "pair_id",
+            "our_year",
+            "marina_year",
+            "our_fwd_50hpa_doy",
+            "marina_fwd_50hpa_doy",
+        ]
+    ].copy()
+    out = out.rename(
+        columns={
+            "our_fwd_50hpa_doy": "our_fwd50_doy",
+            "marina_fwd_50hpa_doy": "marina_fwd50_doy",
+        }
+    )
+    out["mapping_source"] = "feature_matched_field_fingerprint"
+    return out
 
 
 def plot_variant_summary(summary_df: pd.DataFrame) -> None:
@@ -203,7 +250,9 @@ def plot_mapped_o3_scatter(pair_df: pd.DataFrame) -> None:
 def plot_mapped_fwd_scatter(pair_df: pd.DataFrame) -> None:
     valid = pair_df.dropna(subset=["our_fwd50_doy", "marina_fwd50_doy"]).copy()
     corr = valid[["marina_fwd50_doy", "our_fwd50_doy"]].corr().iloc[0, 1]
-    mae = float(np.mean(np.abs(valid["our_fwd50_doy"] - valid["marina_fwd50_doy"])))
+    absdiff = np.abs(valid["our_fwd50_doy"] - valid["marina_fwd50_doy"])
+    mae = float(np.mean(absdiff))
+    max_abs = float(np.max(absdiff))
     fig, ax = plt.subplots(figsize=(5.3, 5.0))
     ax.scatter(
         valid["marina_fwd50_doy"],
@@ -221,11 +270,11 @@ def plot_mapped_fwd_scatter(pair_df: pd.DataFrame) -> None:
     ax.set_ylim(lim_min, lim_max)
     ax.set_xlabel("Marina saved 50 hPa FWD (DOY)")
     ax.set_ylabel("Our generated 50 hPa FWD (DOY)")
-    ax.set_title("Mapped CLIM-3D 50 hPa FWD")
+    ax.set_title("Feature-matched CLIM-3D 50 hPa FWD")
     ax.text(
         0.03,
         0.97,
-        f"n={len(valid)}, corr={corr:.3f}, MAE={mae:.2f} d",
+        f"n={len(valid)}, corr={corr:.3f}\nMAE={mae:.2f} d, max={max_abs:.0f} d",
         transform=ax.transAxes,
         va="top",
         ha="left",
@@ -295,12 +344,14 @@ def main() -> None:
     profile_df = plot_marina_profile(marina_metric_frames["rm5_file"])
     plot_variant_summary(summary_df)
     plot_mapped_o3_scatter(pair_df)
-    plot_mapped_fwd_scatter(pair_df)
+    fwd_pair_df = load_feature_matched_fwd_pair_table()
+    plot_mapped_fwd_scatter(fwd_pair_df)
 
     summary_df.to_csv(TABLE_DIR / "source_isolation_summary.csv", index=False)
     diag_df.to_csv(TABLE_DIR / "mapped_pair_diagnostics.csv", index=False)
     mapping.to_csv(TABLE_DIR / "chunk_mapping_pairs.csv", index=False)
     pair_df.to_csv(TABLE_DIR / "mapped_pair_rm5_details.csv", index=False)
+    fwd_pair_df.to_csv(TABLE_DIR / "mapped_pair_fwd50_feature_matched_details.csv", index=False)
     profile_df.to_csv(TABLE_DIR / "marina_saved_fwd_profiles_rm5.csv", index=False)
 
     valid_o3 = pair_df[pair_df["valid_for_rm5_o3_low25"]].copy()
