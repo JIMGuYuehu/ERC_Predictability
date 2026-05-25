@@ -53,7 +53,7 @@ from hindcast_extension_utils import (
 )
 
 
-VERSION_TAG = "v1"
+VERSION_TAG = "v2"
 NOTEBOOK_SOURCE = "02_paired_INT_vs_NOCOUPL_summary_dashboard.py"
 
 SUMMARY_DIR = table_dir("02_evolution", "paired_INT_vs_NOCOUPL", "summary")
@@ -201,15 +201,17 @@ def build_metrics() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         }
 
         for variable in variables:
-            for window_key, label in [("early", windows["early_label"]), ("late", "Apr-May")]:
+            for window_key, metric_label in [("early", "Early"), ("late", "Apr-May")]:
                 start, end = windows[window_key]
+                actual_label = windows["early_label"] if window_key == "early" else "Apr-May"
                 diff = _mean_diff(df, variable, start, end)
                 rows.append({
                     **row_base,
                     "metric_family": "mean_difference",
-                    "metric": f"{VARIABLE_LABELS[variable]} {label}",
+                    "metric": f"{VARIABLE_LABELS[variable]} {metric_label}",
                     "variable": variable,
-                    "window": label,
+                    "window": actual_label,
+                    "display_window": metric_label,
                     "start_doy": start,
                     "end_doy": end,
                     "value": diff,
@@ -266,10 +268,10 @@ def build_metrics() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         return mat.reindex(index=order)[cols]
 
     mean_order = [
-        "O3 Feb-Mar", "O3 Mar", "O3 Apr-May",
-        "U1 Feb-Mar", "U1 Mar", "U1 Apr-May",
-        "U10 Feb-Mar", "U10 Mar", "U10 Apr-May",
-        "U50 Feb-Mar", "U50 Mar", "U50 Apr-May",
+        "O3 Early", "O3 Apr-May",
+        "U1 Early", "U1 Apr-May",
+        "U10 Early", "U10 Apr-May",
+        "U50 Early", "U50 Apr-May",
     ]
     rmse_order = ["O3 init-May", "U1 init-May", "U10 init-May", "U50 init-May"]
     mean_mat = matrix("mean_difference", mean_order)
@@ -292,6 +294,8 @@ def _column_normalized(mat: pd.DataFrame) -> np.ndarray:
 def _fmt_value(value: float) -> str:
     if not np.isfinite(value):
         return ""
+    if abs(value) < 0.005:
+        value = 0.0
     if abs(value) < 0.1:
         return f"{value:+.2f}"
     if abs(value) < 10:
@@ -299,29 +303,70 @@ def _fmt_value(value: float) -> str:
     return f"{value:+.0f}"
 
 
-def _plot_matrix(ax, mat: pd.DataFrame, title: str, subtitle: str) -> None:
+def _set_plot_style() -> None:
+    """Use a compact journal-style matplotlib theme for the dashboard."""
+    plt.rcParams.update({
+        "figure.facecolor": "white",
+        "axes.facecolor": "white",
+        "axes.edgecolor": "0.15",
+        "axes.linewidth": 0.6,
+        "axes.titlesize": 8.5,
+        "axes.labelsize": 7.0,
+        "xtick.labelsize": 6.9,
+        "ytick.labelsize": 7.2,
+        "font.size": 7.2,
+        "savefig.facecolor": "white",
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+    })
+
+
+def _pretty_columns(columns: pd.Index) -> list[str]:
+    labels = []
+    for col in columns:
+        parts = str(col).split(" ", 1)
+        labels.append("\n".join(parts) if len(parts) == 2 else str(col))
+    return labels
+
+
+def _plot_matrix(ax, mat: pd.DataFrame, title: str, panel: str) -> None:
     normed = _column_normalized(mat)
     im = ax.imshow(normed, aspect="auto", cmap="RdBu_r", vmin=-1, vmax=1)
-    ax.set_title(title, loc="left", fontsize=12, fontweight="bold")
-    ax.text(0.0, 1.02, subtitle, transform=ax.transAxes, fontsize=8.8, color="0.25", va="bottom")
+    ax.set_title(title, loc="left", pad=7, fontweight="bold")
+    ax.text(
+        -0.055,
+        1.08,
+        panel,
+        transform=ax.transAxes,
+        fontsize=10.5,
+        fontweight="bold",
+        va="bottom",
+        ha="right",
+    )
     ax.set_xticks(np.arange(mat.shape[1]))
-    ax.set_xticklabels(mat.columns, rotation=35, ha="right", fontsize=8.5)
+    ax.set_xticklabels(_pretty_columns(mat.columns), rotation=0, ha="center")
     ax.set_yticks(np.arange(mat.shape[0]))
-    ax.set_yticklabels(mat.index, fontsize=9)
+    ax.set_yticklabels(mat.index)
     ax.set_xticks(np.arange(-0.5, mat.shape[1], 1), minor=True)
     ax.set_yticks(np.arange(-0.5, mat.shape[0], 1), minor=True)
-    ax.grid(which="minor", color="white", linewidth=1.0)
+    ax.grid(which="minor", color="white", linewidth=0.9)
     ax.tick_params(which="minor", bottom=False, left=False)
+    ax.tick_params(axis="both", length=0)
+    for spine in ax.spines.values():
+        spine.set_visible(True)
+        spine.set_linewidth(0.6)
+        spine.set_color("0.2")
     for i in range(mat.shape[0]):
         for j in range(mat.shape[1]):
             value = mat.iloc[i, j]
             if np.isfinite(value):
-                ax.text(j, i, _fmt_value(value), ha="center", va="center", fontsize=7.8, color="black")
+                ax.text(j, i, _fmt_value(value), ha="center", va="center", fontsize=6.7, color="black")
     return im
 
 
 def plot_dashboard(metrics: pd.DataFrame, mean_mat: pd.DataFrame, rmse_mat: pd.DataFrame, spread_mat: pd.DataFrame) -> Path:
     """Plot and save the paired INT-vs-NOCOUPL dashboard."""
+    _set_plot_style()
     csv = SUMMARY_DIR / f"02_paired_INT_vs_NOCOUPL_summary_dashboard_{VERSION_TAG}.csv"
     metrics.to_csv(csv, index=False)
     mean_mat.to_csv(SUMMARY_DIR / f"02_paired_INT_vs_NOCOUPL_mean_difference_matrix_{VERSION_TAG}.csv")
@@ -329,33 +374,65 @@ def plot_dashboard(metrics: pd.DataFrame, mean_mat: pd.DataFrame, rmse_mat: pd.D
     spread_mat.to_csv(SUMMARY_DIR / f"02_paired_INT_vs_NOCOUPL_spread_difference_matrix_{VERSION_TAG}.csv")
 
     nrows = max(len(mean_mat), 1)
-    fig_height = max(8.6, 2.4 + nrows * 0.43)
-    fig, axes = plt.subplots(3, 1, figsize=(15.5, fig_height), constrained_layout=True)
+    fig_height = max(6.9, 2.2 + nrows * 0.40)
+    fig = plt.figure(figsize=(7.35, fig_height))
+    gs = fig.add_gridspec(
+        3,
+        2,
+        width_ratios=[1.0, 0.027],
+        height_ratios=[1.18, 1.0, 1.0],
+        left=0.11,
+        right=0.91,
+        bottom=0.17,
+        top=0.90,
+        hspace=0.62,
+        wspace=0.035,
+    )
+    axes = [fig.add_subplot(gs[i, 0]) for i in range(3)]
+    cax = fig.add_subplot(gs[:, 1])
     im = _plot_matrix(
         axes[0],
         mean_mat,
-        "A. Mean pathway difference: H INT-3D minus H Clim 3D",
-        "Physical values are annotated; colors are normalized separately by column so sign/pattern is readable across DU and m/s.",
+        "Pathway shift: H INT-3D minus H Clim 3D",
+        "a",
     )
     _plot_matrix(
         axes[1],
         rmse_mat,
-        "B. RMSE difference relative to BWCN reference",
-        "Negative values mean H INT-3D ensemble-mean pathway is closer to the same-year BWCN reference.",
+        "Skill shift: RMSE difference relative to BWCN",
+        "b",
     )
     _plot_matrix(
         axes[2],
         spread_mat,
-        "C. Ensemble spread difference",
-        "Positive values mean H INT-3D has larger ensemble standard deviation than H Clim 3D.",
+        "Ensemble-spread shift",
+        "c",
     )
-    cbar = fig.colorbar(im, ax=axes, shrink=0.86, pad=0.012)
-    cbar.set_label("Column-normalized signed difference", fontsize=9)
-    fig.suptitle(
-        "Paired H INT-3D vs H Clim 3D evolution summary\n"
-        "O3: 60-90N, 30-70 hPa; winds: U60N at 1/10/50 hPa; full window = initialization to May 30",
-        fontsize=14,
-        fontweight="bold",
+    cbar = fig.colorbar(im, cax=cax)
+    cbar.set_label("Column-normalized\nsigned difference", fontsize=7.0)
+    cbar.ax.tick_params(labelsize=6.8, length=2.5, width=0.5)
+    fig.suptitle("Paired INT-3D minus Clim-3D evolution summary", fontsize=9.6, fontweight="bold", y=0.958)
+    fig.text(
+        0.11,
+        0.103,
+        "Annotated numbers are physical values. O3: 60-90N, 30-70 hPa (DU); winds: U60N at 1, 10 and 50 hPa (m s$^{-1}$). "
+        "Early = Feb-Mar for February starts and March for March starts; Apr-May is fixed; RMSE/spread use initialization-May30.",
+        ha="left",
+        va="top",
+        fontsize=6.55,
+        color="0.25",
+        wrap=True,
+    )
+    fig.text(
+        0.11,
+        0.060,
+        "Reading: negative RMSE shift means INT-3D is closer to BWCN; positive spread shift means INT-3D has larger ensemble spread. "
+        "Color intensity is normalized within each column because columns mix DU and m s$^{-1}$.",
+        ha="left",
+        va="top",
+        fontsize=6.55,
+        color="0.25",
+        wrap=True,
     )
     stem = f"02_paired_INT_vs_NOCOUPL_summary_dashboard_{VERSION_TAG}"
     savefig(
