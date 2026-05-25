@@ -194,11 +194,11 @@ def interp_profile_logp(
     return out
 
 
-def remap_swoosh_to_template(
+def remap_swoosh_to_template_unfilled(
     ds_sw: xr.Dataset,
     ds_tp: xr.Dataset,
     target_year: int,
-) -> tuple[xr.DataArray, list[dict[str, Any]]]:
+) -> xr.DataArray:
     months = year_month_window(target_year)
     lookup = build_swoosh_time_lookup(ds_sw)
     missing = [month for month in months if month not in lookup]
@@ -253,7 +253,16 @@ def remap_swoosh_to_template(
     out_var.attrs = dict(ds_tp[TARGET_VAR].attrs)
     out_var.attrs["missing_value"] = np.float32(FILLVAL)
     out_var.attrs.pop("_FillValue", None)
+    return out_var
 
+
+def remap_swoosh_to_template(
+    ds_sw: xr.Dataset,
+    ds_tp: xr.Dataset,
+    target_year: int,
+) -> tuple[xr.DataArray, list[dict[str, Any]]]:
+    months = year_month_window(target_year)
+    out_var = remap_swoosh_to_template_unfilled(ds_sw, ds_tp, target_year)
     prefill_summary = variable_summary(out_var)
     filled_values, fill_steps = fill_dataarray(out_var, DEFAULT_DIM_ORDER)
     out_filled = out_var.copy(deep=False)

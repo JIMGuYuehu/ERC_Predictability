@@ -1,0 +1,155 @@
+{
+  "created_utc": "2026-05-25T13:03:56.713678+00:00",
+  "swoosh_file": "/mnt/soclim0/public_data/weiji/swoosh/swoosh-v02.72-198401-202601-lonlatpress-20deg-5deg-L31.nc",
+  "reference_file": "/mnt/soclim0/andreas/vmro3_input4MIPs_ozone_CMIP6_UReading-CCMI_2020.nc",
+  "share_dir": "/mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521",
+  "years": [
+    {
+      "target_year": 2011,
+      "window": "201012-201201",
+      "filled_file": "/home/weiji/restart_exam/code_cleaned/SWOOSH_DATA_PROCESS/outputs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201012-201201_filled_no_missing.nc",
+      "plot_file": "/home/weiji/restart_exam/code_cleaned/SWOOSH_DATA_PROCESS/plots/O3_NHpolar_2011_original_vs_filled_target_ppmv.png",
+      "shared_plot_file": "/mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521/O3_NHpolar_2011_original_vs_filled_target_ppmv.png",
+      "consistency": {
+        "shape": [
+          14,
+          66,
+          96,
+          144
+        ],
+        "dtype_filled": "float32",
+        "original_missing_or_nonfinite": 1064448,
+        "original_missing_fraction": 0.08333333333333333,
+        "filled_missing_or_nonfinite": 0,
+        "filled_missing_fraction": 0.0,
+        "max_abs_delta_on_original_finite": 0.0,
+        "finite_delta_note": "original finite values are compared after casting to the filled file dtype",
+        "finite_values_unchanged": true,
+        "coordinate_checks": {
+          "time": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "plev": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "lat": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "lon": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          }
+        }
+      }
+    },
+    {
+      "target_year": 2018,
+      "window": "201712-201901",
+      "filled_file": "/home/weiji/restart_exam/code_cleaned/SWOOSH_DATA_PROCESS/outputs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_201712-201901_filled_no_missing.nc",
+      "plot_file": "/home/weiji/restart_exam/code_cleaned/SWOOSH_DATA_PROCESS/plots/O3_NHpolar_2018_original_vs_filled_target_ppmv.png",
+      "shared_plot_file": "/mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521/O3_NHpolar_2018_original_vs_filled_target_ppmv.png",
+      "consistency": {
+        "shape": [
+          14,
+          66,
+          96,
+          144
+        ],
+        "dtype_filled": "float32",
+        "original_missing_or_nonfinite": 1064448,
+        "original_missing_fraction": 0.08333333333333333,
+        "filled_missing_or_nonfinite": 0,
+        "filled_missing_fraction": 0.0,
+        "max_abs_delta_on_original_finite": 0.0,
+        "finite_delta_note": "original finite values are compared after casting to the filled file dtype",
+        "finite_values_unchanged": true,
+        "coordinate_checks": {
+          "time": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "plev": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "lat": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "lon": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          }
+        }
+      }
+    },
+    {
+      "target_year": 2023,
+      "window": "202212-202401",
+      "filled_file": "/home/weiji/restart_exam/code_cleaned/SWOOSH_DATA_PROCESS/outputs/vmro3_SWOOSHv02.72_combinedo3q_neg2miss_remapped_to_CMIP6_template_202212-202401_filled_no_missing.nc",
+      "plot_file": "/home/weiji/restart_exam/code_cleaned/SWOOSH_DATA_PROCESS/plots/O3_NHpolar_2023_original_vs_filled_target_ppmv.png",
+      "shared_plot_file": "/mnt/soclim0/public_data/weiji/swoosh/SWOOSH_nan_fill_20260521/O3_NHpolar_2023_original_vs_filled_target_ppmv.png",
+      "consistency": {
+        "shape": [
+          14,
+          66,
+          96,
+          144
+        ],
+        "dtype_filled": "float32",
+        "original_missing_or_nonfinite": 1064448,
+        "original_missing_fraction": 0.08333333333333333,
+        "filled_missing_or_nonfinite": 0,
+        "filled_missing_fraction": 0.0,
+        "max_abs_delta_on_original_finite": 0.0,
+        "finite_delta_note": "original finite values are compared after casting to the filled file dtype",
+        "finite_values_unchanged": true,
+        "coordinate_checks": {
+          "time": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "plev": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "lat": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          },
+          "lon": {
+            "present_in_both": true,
+            "same_shape": true,
+            "exact_equal": true,
+            "max_abs_diff": 0.0
+          }
+        }
+      }
+    }
+  ]
+}

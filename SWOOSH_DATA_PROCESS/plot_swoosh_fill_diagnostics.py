@@ -92,6 +92,88 @@ def plot_panel(
     return cf
 
 
+def format_date_window(x_dates: list[datetime]) -> str:
+    if not x_dates:
+        return "unknown date range"
+    return f"{x_dates[0]:%b %Y}-{x_dates[-1]:%b %Y}"
+
+
+def make_plot_from_dataarrays(
+    original_da: xr.DataArray,
+    filled_da: xr.DataArray,
+    time_values: np.ndarray,
+    output_path: Path,
+    lat_min: float,
+    lat_max: float,
+    plev_min: float,
+    plev_max: float,
+    title_prefix: str = "NH polar-cap weighted mean O3",
+) -> Path:
+    original = weighted_polar_mean(original_da, lat_min, lat_max, plev_min, plev_max)
+    filled = weighted_polar_mean(filled_da, lat_min, lat_max, plev_min, plev_max)
+    original_ppmv = original * 1.0e6
+    filled_ppmv = filled * 1.0e6
+    diff_ppmv = filled_ppmv - original_ppmv
+
+    x_dates = infer_month_datetimes(time_values)
+    plev = filled_ppmv["plev"].values
+
+    common_values = np.concatenate(
+        [original_ppmv.values.ravel(), filled_ppmv.values.ravel()]
+    )
+    vmin, vmax = nice_range(common_values, lower=1.0, upper=99.0)
+    common_levels = np.linspace(vmin, vmax, 25)
+
+    diff_abs = np.nanpercentile(np.abs(diff_ppmv.values), 99.0)
+    if not np.isfinite(diff_abs) or diff_abs <= 0:
+        diff_abs = 0.01
+    diff_levels = np.linspace(-float(diff_abs), float(diff_abs), 25)
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6), sharey=True, constrained_layout=True)
+    cf0 = plot_panel(
+        axes[0],
+        x_dates,
+        plev,
+        original_ppmv.values,
+        "Original target",
+        common_levels,
+        "viridis",
+    )
+    plot_panel(
+        axes[1],
+        x_dates,
+        plev,
+        filled_ppmv.values,
+        "Filled target",
+        common_levels,
+        "viridis",
+    )
+    cf2 = plot_panel(
+        axes[2],
+        x_dates,
+        plev,
+        diff_ppmv.values,
+        "Filled - original",
+        diff_levels,
+        "RdBu_r",
+    )
+    axes[0].set_ylabel("Pressure (hPa)")
+    for ax in axes:
+        ax.set_xlabel("Month")
+    fig.colorbar(cf0, ax=axes[:2], orientation="vertical", shrink=0.86, label="O3 (ppmv)")
+    fig.colorbar(cf2, ax=axes[2], orientation="vertical", shrink=0.86, label="Difference (ppmv)")
+
+    fig.suptitle(
+        f"{title_prefix} ({lat_min:.0f}-{lat_max:.0f}N), "
+        f"{plev_min:g}-{plev_max:g} hPa, {format_date_window(x_dates)}",
+        fontsize=15,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=180)
+    plt.close(fig)
+    return output_path
+
+
 def make_plot(
     original_path: Path,
     filled_path: Path,
@@ -114,72 +196,16 @@ def make_plot(
             if variable not in ds_filled:
                 raise KeyError(f"{variable!r} not found in {filled_path}")
 
-            original = weighted_polar_mean(
-                ds_original[variable], lat_min, lat_max, plev_min, plev_max
+            make_plot_from_dataarrays(
+                original_da=ds_original[variable],
+                filled_da=ds_filled[variable],
+                time_values=ds_filled["time"].values,
+                output_path=output_path,
+                lat_min=lat_min,
+                lat_max=lat_max,
+                plev_min=plev_min,
+                plev_max=plev_max,
             )
-            filled = weighted_polar_mean(
-                ds_filled[variable], lat_min, lat_max, plev_min, plev_max
-            )
-            original_ppmv = original * 1.0e6
-            filled_ppmv = filled * 1.0e6
-            diff_ppmv = filled_ppmv - original_ppmv
-
-            x_dates = infer_month_datetimes(ds_filled["time"].values)
-            plev = filled_ppmv["plev"].values
-
-            common_values = np.concatenate(
-                [original_ppmv.values.ravel(), filled_ppmv.values.ravel()]
-            )
-            vmin, vmax = nice_range(common_values, lower=1.0, upper=99.0)
-            common_levels = np.linspace(vmin, vmax, 25)
-
-            diff_abs = np.nanpercentile(np.abs(diff_ppmv.values), 99.0)
-            if not np.isfinite(diff_abs) or diff_abs <= 0:
-                diff_abs = 0.01
-            diff_levels = np.linspace(-float(diff_abs), float(diff_abs), 25)
-
-            fig, axes = plt.subplots(1, 3, figsize=(18, 6), sharey=True, constrained_layout=True)
-            cf0 = plot_panel(
-                axes[0],
-                x_dates,
-                plev,
-                original_ppmv.values,
-                "Original target",
-                common_levels,
-                "viridis",
-            )
-            plot_panel(
-                axes[1],
-                x_dates,
-                plev,
-                filled_ppmv.values,
-                "Filled target",
-                common_levels,
-                "viridis",
-            )
-            cf2 = plot_panel(
-                axes[2],
-                x_dates,
-                plev,
-                diff_ppmv.values,
-                "Filled - original",
-                diff_levels,
-                "RdBu_r",
-            )
-            axes[0].set_ylabel("Pressure (hPa)")
-            for ax in axes:
-                ax.set_xlabel("Month")
-            fig.colorbar(cf0, ax=axes[:2], orientation="vertical", shrink=0.86, label="O3 (ppmv)")
-            fig.colorbar(cf2, ax=axes[2], orientation="vertical", shrink=0.86, label="Difference (ppmv)")
-
-            fig.suptitle(
-                f"NH polar-cap weighted mean O3 ({lat_min:.0f}-{lat_max:.0f}N), "
-                f"{plev_min:g}-{plev_max:g} hPa, Dec 2019-Jan 2021",
-                fontsize=15,
-            )
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            fig.savefig(output_path, dpi=180)
-            plt.close(fig)
 
     return output_path
 
