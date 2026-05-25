@@ -40,6 +40,29 @@ The difference is therefore not just styling. The data source, O3 ranking
 diagnostic, FWD source, anomaly convention, panel layout, and uncertainty
 shading convention are all different.
 
+## Why Marina And Cleaned Partial O3 Differ In Absolute Value
+
+Marina's nominal 30-70 hPa O3 partial column is a pressure-level discrete sum
+after `ml2pl` interpolation. On the WACCM pressure grid she selects the 30, 50,
+and 70 hPa levels and assigns each selected level a backward pressure increment:
+
+| selected level | weight | effective layer |
+| ---: | ---: | ---: |
+| 30 hPa | 10 hPa | 20-30 hPa |
+| 50 hPa | 20 hPa | 30-50 hPa |
+| 70 hPa | 20 hPa | 50-70 hPa |
+
+So the Marina "30-70 hPa" diagnostic effectively integrates 20-70 hPa with a
+total 50 hPa pressure thickness. The cleaned `partial_O3` product instead uses
+CAM/WACCM hybrid interface pressures and exact layer overlap with the requested
+30-70 hPa interval, so it is a true 30-70 hPa column with 40 hPa thickness.
+
+In the feature-matched CLIM-3D years, this explains the absolute offset: Marina
+March-April O3 averages about `131.1 DU`, while the cleaned hybrid-overlap
+30-70 hPa product averages about `109.5 DU`; the mean offset is about `+21.7 DU`.
+The year-to-year ranking is still highly correlated, but the absolute
+climatology is not meant to be identical.
+
 ## Implementation Detail To Remember
 
 In Marina's notebook-era `find_ozone_extremes_FW` code, the active slice after

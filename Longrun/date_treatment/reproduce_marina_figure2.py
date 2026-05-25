@@ -338,7 +338,9 @@ def build_waccm_reproduction() -> pd.DataFrame:
     ax.axvline(0, color="k", linewidth=0.5)
     ax.set_xlim(-35, 35)
     ax.set_xticks([-30, -20, -10, 0, 10, 20, 30])
-    ax.set_ylim(np.log(50), np.log(1))
+    # Match Marina's Figure 2 pressure orientation: low pressure aloft, so
+    # 1 hPa is at the top and 50 hPa is at the bottom.
+    ax.set_ylim(np.log(1), np.log(50))
     ax.invert_yaxis()
     ax.set_yticks([np.log(50), np.log(10), np.log(5), np.log(1)])
     ax.set_yticklabels(["50", "10", "5", "1"])
